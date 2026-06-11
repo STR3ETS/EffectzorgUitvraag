@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Effectzorg — Uitvraag software & werkprocessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15233f;
+    --ink-soft:#54607a;
+    --muted:#9aa1b2;
+    --paper:#f4f3ee;
+    --card:#ffffff;
+    --line:#e8e7df;
+    --line-strong:#d8d7cc;
+    --accent:#0E94C4;
+    --accent-ink:#0a6f93;
+    --accent-soft:#e6f5fb;
+    --gold:#F4B400;
+    --field:#faf9f4;
+    --shadow:0 1px 2px rgba(20,35,63,.04), 0 26px 54px -32px rgba(20,35,63,.32);
+    --shadow-sm:0 1px 2px rgba(20,35,63,.05), 0 10px 26px -18px rgba(20,35,63,.22);
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1100px 460px at 82% -130px, rgba(14,148,196,.10), transparent 60%),
+      radial-gradient(820px 380px at -8% 0%, rgba(244,180,0,.07), transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Figtree', sans-serif;
+    font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    padding-bottom:90px;
+  }
+
+  /* TOOLBAR */
+  .toolbar{
+    position:sticky;top:0;z-index:60;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:13px 24px;background:rgba(247,246,241,.82);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .tb-left{display:flex;align-items:center;gap:13px;min-width:0}
+  .tb-mark{width:34px;height:34px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#0E94C4,#0a6480);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Fraunces';font-weight:600;font-size:18px}
+  .tb-kicker{font-family:'Spline Sans Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+  .tb-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tb-actions{display:flex;align-items:center;gap:9px;flex-shrink:0}
+  .btn{font-family:'Figtree';font-weight:600;font-size:13.5px;border:none;border-radius:10px;cursor:pointer;padding:10px 15px;display:inline-flex;align-items:center;gap:8px;transition:transform .12s ease, box-shadow .2s ease, background .2s, border-color .2s, color .2s}
+  .btn svg{width:16px;height:16px}
+  .btn-primary{background:var(--ink);color:#fff;box-shadow:0 10px 22px -12px rgba(20,35,63,.6)}
+  .btn-primary:hover{transform:translateY(-1px)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent-ink)}
+
+  /* DOC */
+  .doc{max-width:820px;margin:32px auto;background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+  .doc-inner{padding:44px clamp(22px,5.5vw,60px)}
+
+  /* COVER */
+  .cover{position:relative;padding:56px clamp(22px,5.5vw,60px) 42px;background:radial-gradient(680px 280px at 86% -70px, rgba(14,148,196,.20), transparent 60%),linear-gradient(180deg,#15233f 0%, #1b3055 100%);color:#fff;overflow:hidden}
+  .cover:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:30px 30px;-webkit-mask:radial-gradient(60% 92% at 72% 0%, #000, transparent 70%);mask:radial-gradient(60% 92% at 72% 0%, #000, transparent 70%);pointer-events:none}
+  .cover-eyebrow{position:relative;display:inline-flex;align-items:center;gap:9px;font-family:'Spline Sans Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#94d8ef;margin-bottom:22px}
+  .cover-eyebrow .sq{width:8px;height:8px;background:var(--gold);border-radius:2px}
+  .cover h1{position:relative;font-family:'Fraunces';font-weight:600;font-size:clamp(31px,5.6vw,50px);line-height:1.04;letter-spacing:-.01em;max-width:17ch}
+  .cover h1 em{font-style:italic;color:#6fcef0}
+  .cover .lead{position:relative;margin-top:22px;max-width:58ch;font-size:16.5px;line-height:1.66;color:#cfd8ea}
+  .cover-meta{position:relative;margin-top:32px;display:flex;flex-wrap:wrap;gap:12px}
+  .meta-pill{display:flex;flex-direction:column;gap:3px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:9px 15px;min-width:155px}
+  .meta-pill label{font-family:'Spline Sans Mono';font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#94d8ef}
+  .meta-pill input{background:transparent;border:none;color:#fff;font-family:'Figtree';font-size:14.5px;font-weight:600;width:100%;outline:none}
+  .meta-pill input::placeholder{color:rgba(255,255,255,.45)}
+
+  /* HOW IT WORKS */
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:34px}
+  .how-step{background:var(--field);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .how-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);font-family:'Spline Sans Mono';font-size:13px;font-weight:600;margin-bottom:11px}
+  .how-step h4{font-family:'Fraunces';font-weight:600;font-size:16px;color:var(--ink);margin-bottom:5px}
+  .how-step p{font-size:13.5px;line-height:1.5;color:var(--ink-soft)}
+
+  /* SECTIONS */
+  section{margin-top:52px}
+  .sec-head{margin-bottom:24px}
+  .eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:'Spline Sans Mono';font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+  .ey-num{width:27px;height:27px;border-radius:8px;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-family:'Fraunces';font-weight:600;font-size:14px}
+  .sec-head h2{font-family:'Fraunces';font-weight:600;font-size:clamp(23px,3.8vw,31px);line-height:1.12;letter-spacing:-.01em;color:var(--ink)}
+  .sec-head .lead{margin-top:12px;max-width:66ch;color:var(--ink-soft);font-size:15.5px}
+  .sec-rule{height:3px;width:56px;background:var(--gold);border-radius:3px;margin-top:15px}
+
+  /* ACCESS */
+  .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .acard{background:var(--field);border:1px solid var(--line);border-radius:15px;padding:19px 19px 21px;box-shadow:var(--shadow-sm)}
+  .acard-h{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+  .adot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+  .acard-h h3{font-family:'Fraunces';font-weight:600;font-size:19px;color:var(--ink)}
+  .other-title{font-family:'Fraunces';font-weight:600;font-size:19px;border:none;background:transparent;padding:2px 0;min-width:170px;width:auto}
+  .afields{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .afield{display:flex;flex-direction:column;gap:6px}
+  .afield.wide{grid-column:1 / -1}
+
+  /* NAV */
+  .pnav{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:20px;padding:15px 16px;background:var(--field);border:1px solid var(--line);border-radius:14px}
+  .pnav-label{font-family:'Spline Sans Mono';font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);margin-right:3px}
+  #pnav-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .navchip{display:inline-flex;align-items:center;gap:8px;font-family:'Figtree';font-size:13.5px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:7px 14px;cursor:pointer;transition:.15s}
+  .navchip:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .nc-dot{width:7px;height:7px;border-radius:50%;background:var(--line-strong);transition:.2s}
+  .navchip[data-filled="1"] .nc-dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+  /* ACCORDION */
+  .acc{background:var(--card);border:1px solid var(--line-strong);border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow-sm);overflow:hidden;counter-increment:person}
+  .acc-head{width:100%;display:flex;align-items:center;gap:16px;padding:18px 20px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:inherit;transition:background .15s}
+  .acc-head:hover{background:var(--field)}
+  .acc-num{flex-shrink:0;width:42px;height:42px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces';font-weight:600;font-size:18px}
+  .acc-id{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .acc-name{font-family:'Fraunces';font-weight:600;font-size:20px;color:var(--ink);line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acc-name.is-empty{color:var(--muted);font-style:italic;font-weight:500}
+  .acc-func{font-size:13.5px;color:var(--ink-soft)}
+  .acc-status{flex-shrink:0;width:9px;height:9px;border-radius:50%;background:var(--line-strong);transition:.2s}
+  .acc[data-filled="1"] .acc-status{background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+  .acc-chev{flex-shrink:0;width:20px;height:20px;color:var(--muted);transition:transform .3s}
+  .acc.open .acc-chev{transform:rotate(180deg)}
+  .acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .acc-inner{padding:6px 20px 26px;border-top:1px solid var(--line)}
+
+  .pid2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:18px}
+  .qbox{margin-top:24px}
+  .qgroup{margin-top:26px}
+  .qg-head{margin-bottom:13px}
+  .qlabel{font-family:'Fraunces';font-weight:600;font-size:17.5px;color:var(--ink)}
+  .qhint{font-size:13.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;max-width:62ch}
+
+  /* ENTRIES */
+  .entries{display:flex;flex-direction:column;gap:12px}
+  .entry{position:relative;background:var(--field);border:1px solid var(--line);border-radius:13px;padding:16px 16px 17px}
+  .entry-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+  .entry-tag{font-family:'Spline Sans Mono';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:5px 10px}
+  .syspill{width:auto;min-width:160px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line-strong);border-radius:9px;padding:8px 32px 8px 13px}
+  .entry-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .entry textarea,.entry input{background:#fff}
+
+  /* FIELDS */
+  .flabel{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+  .fcol{display:flex;flex-direction:column}
+  input[type=text],textarea,select{width:100%;font-family:'Figtree';font-size:15.5px;color:var(--ink);background:#fff;border:1px solid var(--line-strong);border-radius:11px;padding:11px 13px;outline:none;transition:border-color .15s, box-shadow .15s}
+  textarea.auto{min-height:2.9em;resize:vertical;overflow:hidden;line-height:1.55}
+  .qbox > textarea.auto{min-height:3.6em}
+  input[type=text]::placeholder,textarea::placeholder{color:var(--muted)}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2354607a' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer}
+
+  .xbtn{flex-shrink:0;width:26px;height:26px;border-radius:8px;border:1px solid var(--line-strong);background:#fff;color:var(--muted);cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .xbtn:hover{color:#e0556b;border-color:#f3c2cb;background:#fff5f6}
+  .addrow{margin-top:13px;font-family:'Figtree';font-weight:600;font-size:13.5px;color:var(--accent-ink);background:#fff;border:1.5px dashed var(--line-strong);border-radius:11px;padding:10px 15px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .addrow:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+  .add-person-wrap{margin-top:8px}
+  .add-person{width:100%;justify-content:center;font-family:'Figtree';font-weight:700;font-size:15px;color:var(--ink);background:#fff;border:2px dashed var(--line-strong);border-radius:15px;padding:19px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:9px}
+  .add-person:hover{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+
+  /* TEAM-WIDE BLOCK */
+  .team-block{background:var(--card);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:6px 20px 24px}
+  .team-block .tb-head{display:flex;align-items:center;gap:14px;padding:18px 0 4px}
+  .team-block .tb-icon{width:42px;height:42px;border-radius:12px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces';font-weight:600;font-size:20px}
+  .team-block .tb-h{font-family:'Fraunces';font-weight:600;font-size:20px}
+
+  /* FOOTER */
+  .doc-footer{margin-top:48px;padding:24px clamp(22px,5.5vw,60px) 34px;border-top:1px solid var(--line);background:var(--field);color:var(--ink-soft);font-size:13.5px;line-height:1.55}
+  .doc-footer strong{color:var(--ink)}
+
+  /* BRAND BAR */
+  .brandbar{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;padding:20px 24px;background:#fff;border-bottom:1px solid var(--line)}
+  .logoslot{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:120px;min-height:54px;padding:6px 16px;border-radius:12px;cursor:pointer;transition:background .15s, box-shadow .15s}
+  .logoslot:hover{background:var(--field);box-shadow:inset 0 0 0 1px var(--line)}
+  .logo-img{max-height:52px;max-width:230px;object-fit:contain;display:block}
+  .logoslot-dark{background:#19203D;padding:13px 22px}
+  .logoslot-dark:hover{background:#19203D;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+  .logoslot-dark .logo-img{max-height:40px;max-width:260px}
+  .logoslot.has-logo .logo-ph{display:none}
+  .wm{font-family:'Figtree';font-weight:800;font-size:28px;letter-spacing:-.025em;line-height:1;white-space:nowrap}
+  .wm-eazy{color:var(--ink)}
+  .wm-eazy b{color:#0bb6d6;font-weight:800}
+  .wm-effect{color:var(--ink)}
+  .wm-effect i{font-style:normal;color:#0E94C4}
+  .brand-x{color:var(--muted);font-size:17px;font-weight:300;user-select:none}
+  .logo-edit{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:4px;font-family:'Spline Sans Mono';font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border:1px solid #cfeefa;border-radius:999px;padding:2px 9px;opacity:0;transition:opacity .15s;pointer-events:none;white-space:nowrap}
+  .logo-edit svg{width:10px;height:10px}
+  .logoslot:hover .logo-edit{opacity:1}
+
+  /* UPLOADER */
+  .opt{font-family:'Spline Sans Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-left:7px;vertical-align:middle}
+  .uploader{margin-top:4px}
+  .upbtn{display:inline-flex;align-items:center;gap:8px;font-family:'Figtree';font-weight:600;font-size:13.5px;color:var(--accent-ink);background:#fff;border:1.5px dashed var(--line-strong);border-radius:11px;padding:11px 16px;cursor:pointer;transition:.15s}
+  .upbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .upbtn svg{width:16px;height:16px}
+  .uplist{display:flex;flex-wrap:wrap;gap:11px;margin-top:13px}
+  .upitem{position:relative}
+  .upimg{width:152px}
+  .upimg img{width:152px;height:106px;object-fit:cover;border-radius:11px;border:1px solid var(--line-strong);display:block}
+  .upimg .upname{display:block;font-size:11px;color:var(--ink-soft);margin-top:5px;max-width:152px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .upfile{display:flex;align-items:center;gap:11px;background:var(--field);border:1px solid var(--line-strong);border-radius:11px;padding:11px 36px 11px 14px;min-width:240px}
+  .upicon{flex-shrink:0;width:32px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--accent-ink)}
+  .upicon svg{width:22px;height:26px}
+  .upmeta{display:flex;flex-direction:column;min-width:0}
+  .upmeta .upname{font-weight:600;font-size:13.5px;color:var(--ink);max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .upsize{font-size:11.5px;color:var(--ink-soft)}
+  .upx{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:7px;border:1px solid var(--line-strong);background:#fff;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .upx:hover{color:#e0556b;border-color:#f3c2cb;background:#fff5f6}
+
+  /* RESPONSIVE */
+  @media (max-width:740px){
+    .how{grid-template-columns:1fr}
+    .access-grid,.afields,.pid2,.entry-meta,.duo{grid-template-columns:1fr}
+    .tb-title,.tb-kicker{display:none}
+    .acc-name{font-size:18px}
+  }
+
+  /* PRINT */
+  @media print{
+    body{background:#fff;padding:0}
+    .toolbar,.pnav,.addrow,.xbtn,.add-person-wrap,.how,.upbtn,.upx,.logo-edit{display:none !important}
+    .doc{box-shadow:none;border:none;border-radius:0;margin:0;max-width:100%}
+    .doc-inner{padding:6mm 12mm}
+    .cover{border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .acc,.acard,.cover,.acc-num,.ey-num,.adot,.sec-rule,.team-block .tb-icon{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .acc-body{max-height:none !important;overflow:visible !important}
+    .acc-chev,.acc-status{display:none !important}
+    .acc-head{cursor:default}
+    input[type=text],textarea,select{background:#fff !important;border-color:#c9cdda !important;box-shadow:none !important}
+    textarea.auto{overflow:visible !important}
+    .acc{break-before:page}
+    .acc:first-of-type{break-before:auto}
+    .qbox,.qgroup,.entry,.acard,.afield,.team-block{break-inside:avoid}
+    .brandbar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .upimg img,.upfile,.upitem{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .uplist:empty{display:none}
+  }
+</style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <div class="tb-left">
+      <div class="tb-mark">E</div>
+      <div>
+        <div class="tb-kicker">EAZYONLINE × Effectzorg</div>
+        <div class="tb-title">Uitvraag software & werkprocessen</div>
+      </div>
+    </div>
+    <div class="tb-actions">
+      <button class="btn btn-ghost" id="expandBtn" onclick="toggleAll()">Alles uitklappen</button>
+      <button class="btn btn-ghost" onclick="addColleague()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Collega
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+        Opslaan als PDF
+      </button>
+    </div>
+  </div>
+
+  <main class="doc">
+
+    <div class="brandbar">
+      <div class="logoslot has-logo" title="Klik om een ander logo te kiezen" onclick="pickLogo(this)">
+        <img class="logo-img" alt="Eazyonline" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIxLjEuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDc2NSAxODMiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDc2NSAxODM7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZGlzcGxheTpub25lO30KCS5zdDF7ZGlzcGxheTppbmxpbmU7fQoJLnN0MntzdHJva2U6IzAwMDAwMDtzdHJva2Utd2lkdGg6MztzdHJva2UtbWl0ZXJsaW1pdDoxMDt9Cgkuc3Qze2ZpbGw6IzA2QzJENDt9Cgkuc3Q0e2ZpbGw6IzA2QzJENDtzdHJva2U6IzA2QzJENDtzdHJva2Utd2lkdGg6MjtzdHJva2UtbWl0ZXJsaW1pdDoxMDt9Cgkuc3Q1e2ZpbGw6IzE5MjAzRDt9Cgkuc3Q2e2ZpbGw6IzE5MjAzQzt9Cjwvc3R5bGU+CjxnIGlkPSJMYXllcl8xIiBjbGFzcz0ic3QwIj4KCTxnIGNsYXNzPSJzdDEiPgoJCTxwYXRoIGQ9Ik05MC42LDEyNS4xbDIuMiw5LjhjLTMuOSwxLjgtOC4zLDMuMi0xMy4zLDQuMmMtNSwxLjEtOS45LDEuNi0xNC44LDEuNmMtMTMuMiwwLTIzLjctMy45LTMxLjQtMTEuNgoJCQljLTcuOC03LjctMTEuNi0xOC41LTExLjYtMzIuNWMwLTYuMiwwLjktMTIsMi43LTE3LjVjMS44LTUuNCw0LjMtMTAuMSw3LjYtMTRjMy4zLTMuOSw3LjQtNi45LDEyLjItOS4xQzQ5LDU0LDU0LjMsNTIuOSw2MCw1Mi45CgkJCWM0LDAsOCwwLjYsMTIsMS44YzQsMS4yLDcuNiwzLjMsMTAuOSw2LjNjMy4zLDMsNS45LDYuOSw4LDExLjZDOTIuOSw3Ny41LDk0LDgzLDk0LDg5LjNjMCwzLjUtMC4yLDYuOC0wLjUsOS44SDMzLjYKCQkJYzAuMiwzLjksMC45LDcuNywxLjksMTEuNWMxLjEsMy44LDIuOCw3LjEsNS4zLDEwLjFjMi41LDIuOSw1LjgsNS4zLDkuOCw3LjJjNCwxLjgsOSwyLjcsMTQuOSwyLjdjMy45LDAsOC4xLTAuNSwxMi42LTEuNQoJCQlDODIuNywxMjguMSw4Ni45LDEyNi44LDkwLjYsMTI1LjF6IE02MCw2Mi45Yy00LjgsMC05LDEtMTIuNiwzLjFjLTMuNiwyLjEtNi43LDUuMS05LjEsOS4yYy0yLjUsNC4xLTQsOS4zLTQuNiwxNS42aDQ4LjZsMC4yLTMuMgoJCQljMC0zLjEtMC42LTYuNi0xLjctMTAuNWMtMS4yLTMuOS0zLjUtNy4yLTctMTAuMUM3MC4zLDY0LjMsNjUuNyw2Mi45LDYwLDYyLjl6Ii8+CgkJPHBhdGggZD0iTTE2NiwxMzIuOWMtOC45LDUuMi0xOS43LDcuOC0zMi40LDcuOGMtMTAsMC0xNy43LTIuMi0yMy4yLTYuN3MtOC4yLTEwLjQtOC4yLTE3LjljMC00LjMsMC45LTguMywyLjctMTEuOQoJCQljMS44LTMuNiw1LjItNi43LDEwLTkuNGM0LjgtMi43LDExLjMtNCwxOS41LTQuMmM2LjQsMCwxMy4xLDAuOCwyMC4xLDIuM3YtOS42YzAtNi41LTEuOC0xMS42LTUuNC0xNS4xCgkJCWMtMy42LTMuNS05LjEtNS4yLTE2LjQtNS4yYy0zLjgsMC03LjcsMC40LTExLjksMS4ycy03LjcsMS45LTEwLjYsMy4xbC0yLjctOS42YzMuNC0xLjQsNy42LTIuNiwxMi40LTMuNQoJCQljNC44LTAuOSw5LjMtMS4zLDEzLjYtMS4zYzEwLjYsMCwxOC43LDIuNywyNC4yLDhzOC4yLDEzLDguMiwyM1YxMzIuOXogTTEzNC41LDEzMS40YzguNCwwLDE1LjEtMS42LDIwLTQuN3YtMjUuMwoJCQljLTcuMy0xLjYtMTMuNi0yLjMtMTktMi4zYy02LjQsMC0xMS43LDEuMy0xNS43LDMuOGMtNCwyLjYtNi4xLDYuOC02LjEsMTIuOGMwLDIuNCwwLjYsNC45LDEuOCw3LjRjMS4yLDIuNSwzLjUsNC41LDYuOCw2CgkJCUMxMjUuNywxMzAuNywxMjkuOCwxMzEuNCwxMzQuNSwxMzEuNHoiLz4KCQk8cGF0aCBkPSJNMTc4LjgsNTQuOWg2MC40djguM2MtMTEuOSwyMS40LTI4LjEsNDMuMy00OC42LDY1LjdoNTEuMXY5LjhIMTc2di04LjNjMjIuNy0yNC42LDM5LjUtNDYuNSw1MC4yLTY1LjdoLTQ3LjRWNTQuOXoiLz4KCQk8cGF0aCBjbGFzcz0ic3QyIiBkPSJNMjQ2LjcsMTYzLjRsMi44LTcuMWM0LjQsMi4xLDgsMy4xLDE0LjMsMy4xYzguNywwLDE0LjQtNS4xLDIwLjctMTkuN2wtNDAuMi04My4yaDkuNGwzNC44LDc0LjlsMzAuMi03NC45CgkJCWg4LjlsLTM2LjMsODYuN2MtNy40LDE3LjYtMTUuOSwyMy44LTI3LjksMjMuOEMyNTYuOSwxNjcsMjUyLjMsMTY1LjksMjQ2LjcsMTYzLjR6Ii8+CgkJPHBhdGggY2xhc3M9InN0MyIgZD0iTTQxMS44LDk2LjJjMCw2LjUtMC45LDEyLjYtMi44LDE4LjFjLTEuOSw1LjUtNC42LDEwLjMtOC4yLDE0LjJjLTMuNiwzLjktOCw3LTEzLjIsOS4xCgkJCWMtNS4yLDIuMS0xMC45LDMuMi0xNy4xLDMuMmMtMTIuNiwwLTIyLjctNC4xLTMwLjMtMTIuMmMtNy41LTguMS0xMS4zLTE4LjktMTEuMy0zMi4zYzAtMTMuMywzLjgtMjQsMTEuMy0zMi4yCgkJCWM3LjUtOC4xLDE3LjYtMTIuMiwzMC4zLTEyLjJjNi4yLDAsMTEuOSwxLjEsMTcuMSwzLjJjNS4yLDIuMSw5LjYsNS4xLDEzLjIsOS4xYzMuNiwzLjksNi4zLDguNiw4LjIsMTQuMQoJCQlDNDEwLjgsODMuNiw0MTEuOCw4OS42LDQxMS44LDk2LjJ6IE0zNTIuMiw5Ni4yYzAsNC45LDAuNyw5LjQsMi4xLDEzLjVjMS40LDQuMSwzLjUsNy4yLDYuNCw5LjFjMi45LDIsNi4xLDMsOS42LDMKCQkJYzUuOCwwLDEwLjItMi4zLDEzLjMtNi44YzMuMS00LjUsNC43LTEwLjgsNC43LTE4LjhjMC03LjktMS42LTE0LjEtNC43LTE4LjZjLTMuMS00LjUtNy41LTYuOC0xMy4zLTYuOGMtMy41LDAtNi43LDAuOS05LjMsMi43CgkJCWMtMi43LDEuOC00LjgsNC43LTYuNCw4LjZDMzUzLjEsODUuOSwzNTIuMiw5MC42LDM1Mi4yLDk2LjJ6Ii8+CgkJPHBhdGggY2xhc3M9InN0MyIgZD0iTTQ0Mi40LDEzOC43aC0yMi44VjU5LjFjNS4yLTIuMiwxMS4yLTQsMTgtNS4zYzYuOC0xLjMsMTMuMy0yLDE5LjYtMmMxMi4yLDAsMjEuNiwyLjksMjguMyw4LjgKCQkJYzYuNyw1LjksMTAsMTQuMywxMCwyNS4zdjUyLjloLTIzVjg3LjVjMC0xMS4yLTUuMi0xNi44LTE1LjUtMTYuOGMtNS40LDAtMTAuMywxLTE0LjYsM1YxMzguN3oiLz4KCQk8cGF0aCBjbGFzcz0ic3QzIiBkPSJNNTI5LjIsMTguMlYxMDhjMCw0LjUsMC43LDgsMi4xLDEwLjNjMS40LDIuMywzLjcsMy41LDYuOSwzLjVjMS44LDAsMy40LTAuMiw0LjgtMC41bDEuNywxOC4xCgkJCWMtNC4yLDAuOS04LjEsMS4zLTExLjYsMS4zYy0xNy45LDAtMjYuOC0xMC44LTI2LjgtMzIuNFYxOS41TDUyOS4yLDE4LjJ6Ii8+CgkJPHBhdGggY2xhc3M9InN0MyIgZD0iTTU2MC41LDQyLjRjLTQuMSwwLTcuMy0xLjItOS43LTMuNWMtMi40LTIuMy0zLjYtNS40LTMuNi05LjNjMC0zLjksMS4yLTcsMy42LTkuM2MyLjQtMi4zLDUuNi0zLjUsOS43LTMuNQoJCQljNCwwLDcuMiwxLjIsOS42LDMuNmMyLjQsMi40LDMuNiw1LjUsMy42LDkuMmMwLDMuOC0xLjIsNi44LTMuNiw5LjJDNTY3LjYsNDEuMiw1NjQuNSw0Mi40LDU2MC41LDQyLjR6IE01NzEuOSw1My43djg1aC0yM3YtODUKCQkJSDU3MS45eiIvPgoJCTxwYXRoIGNsYXNzPSJzdDMiIGQ9Ik02MDcuNCwxMzguN2gtMjIuOFY1OS4xYzUuMi0yLjIsMTEuMi00LDE4LTUuM2M2LjgtMS4zLDEzLjMtMiwxOS42LTJjMTIuMiwwLDIxLjYsMi45LDI4LjMsOC44CgkJCWM2LjcsNS45LDEwLDE0LjMsMTAsMjUuM3Y1Mi45aC0yM1Y4Ny41YzAtMTEuMi01LjItMTYuOC0xNS41LTE2LjhjLTUuNCwwLTEwLjMsMS0xNC42LDNWMTM4Ljd6Ii8+CgkJPHBhdGggY2xhc3M9InN0MyIgZD0iTTczNy43LDExNi42bDMuNywxOC41Yy0zLjcsMS43LTguMSwzLTEzLjMsNC4xYy01LjIsMS4xLTEwLjUsMS42LTE1LjgsMS42Yy02LjUsMC0xMi42LTEtMTguMi0zLjEKCQkJYy01LjYtMi4xLTEwLjQtNS0xNC40LTguOWMtNC0zLjktNy4xLTguNi05LjItMTQuMmMtMi4yLTUuNi0zLjItMTEuNy0zLjItMTguNGMwLTYuNCwxLTEyLjQsMy0xNy45czQuOC0xMC4yLDguNS0xNC4xCgkJCWMzLjctMy45LDgtNywxMy4xLTkuMWM1LjEtMi4yLDEwLjYtMy4yLDE2LjYtMy4yYzEwLjgsMCwxOS41LDMuNSwyNi4xLDEwLjVjNi43LDcsMTAsMTYuMSwxMCwyNy4zYzAsNC0wLjIsOC4yLTAuNywxMi42aC01Mi42CgkJCWMyLjEsMTIuOSw5LjksMTkuMywyMy4zLDE5LjNDNzIyLjQsMTIxLjQsNzMwLjEsMTE5LjgsNzM3LjcsMTE2LjZ6IE03MDguNSw3MGMtNC44LDAtOC43LDEuNi0xMS43LDQuOGMtMy4xLDMuMi01LDcuNy01LjcsMTMuMwoJCQloMzEuNnYtMmMwLTQuOC0xLjItOC42LTMuNy0xMS42QzcxNi40LDcxLjUsNzEyLjksNzAsNzA4LjUsNzB6Ii8+Cgk8L2c+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNTYwLjUsNDIuNGMtNC4xLDAtNy4zLTEuMi05LjctMy41Yy0yLjQtMi4zLTMuNi01LjQtMy42LTkuM2MwLTMuOSwxLjItNywzLjYtOS4zYzIuNC0yLjMsNS42LTMuNSw5LjctMy41CgkJYzQsMCw3LjIsMS4yLDkuNiwzLjZjMi40LDIuNCwzLjYsNS41LDMuNiw5LjJjMCwzLjgtMS4yLDYuOC0zLjYsOS4yQzU2Ny42LDQxLjIsNTY0LjUsNDIuNCw1NjAuNSw0Mi40eiIvPgo8L2c+CjxnIGlkPSJMYXllcl8yIj4KCTxnPgoJCTxwYXRoIGNsYXNzPSJzdDMiIGQ9Ik05NC4xLDExNy42bDMuNywxOC41Yy0zLjcsMS43LTguMSwzLTEzLjMsNC4xYy01LjIsMS4xLTEwLjUsMS42LTE1LjgsMS42Yy02LjUsMC0xMi42LTEtMTguMi0zLjEKCQkJYy01LjYtMi4xLTEwLjQtNS0xNC40LTguOWMtNC0zLjktNy4xLTguNi05LjItMTQuMmMtMi4yLTUuNi0zLjItMTEuNy0zLjItMTguNGMwLTYuNCwxLTEyLjQsMy0xNy45czQuOC0xMC4yLDguNS0xNC4xCgkJCWMzLjctMy45LDgtNywxMy4xLTkuMWM1LjEtMi4yLDEwLjYtMy4yLDE2LjYtMy4yYzEwLjgsMCwxOS41LDMuNSwyNi4xLDEwLjVjNi43LDcsMTAsMTYuMSwxMCwyNy4zYzAsNC0wLjIsOC4yLTAuNywxMi42SDQ3LjcKCQkJYzIuMSwxMi45LDkuOSwxOS4zLDIzLjMsMTkuM0M3OC44LDEyMi40LDg2LjUsMTIwLjgsOTQuMSwxMTcuNnogTTY0LjksNzFjLTQuOCwwLTguNywxLjYtMTEuNyw0LjhjLTMuMSwzLjItNSw3LjctNS43LDEzLjNINzl2LTIKCQkJYzAtNC44LTEuMi04LjYtMy43LTExLjZTNjkuMyw3MSw2NC45LDcxeiIvPgoJCTxwYXRoIGNsYXNzPSJzdDMiIGQ9Ik0xNzMuOCwxMzQuNGMtMy45LDItOSwzLjctMTUuNCw1LjJjLTYuNCwxLjQtMTMuMywyLjItMjAuOSwyLjJjLTExLDAtMTkuNC0yLjQtMjUuNC03LjIKCQkJYy01LjktNC44LTguOS0xMS4xLTguOS0xOC45YzAtOC4xLDMtMTQuNSw5LjEtMTkuMWM2LjEtNC43LDE0LjItNywyNC4zLTcuMmM0LjMsMCw5LjMsMC40LDE0LjgsMS4zdi00YzAtMTAtNS43LTE1LTE3LTE1CgkJCWMtMy41LDAtNy4zLDAuMy0xMS4zLDFjLTQsMC43LTcuNSwxLjctMTAuNiwzbC00LjItMThjMy43LTEuNiw4LjItMi44LDEzLjctMy43YzUuNS0wLjksMTAuNS0xLjMsMTUuMS0xLjMKCQkJYzEyLDAsMjEuMSwzLjEsMjcuMyw5LjJjNi4yLDYuMiw5LjMsMTQuOSw5LjMsMjYuMlYxMzQuNHogTTEzOS45LDEyNS4zYzQuOSwwLDguOC0wLjgsMTEuNi0yLjN2LTE3LjhjLTQuMS0wLjktOC0xLjMtMTEuOC0xLjMKCQkJYy00LDAtNy4zLDAuOS05LjgsMi43Yy0yLjYsMS44LTMuOCw0LjUtMy44LDguMWMwLDMuNCwxLjIsNi4xLDMuNyw3LjlDMTMyLjIsMTI0LjMsMTM1LjYsMTI1LjMsMTM5LjksMTI1LjN6Ii8+CgkJPHBhdGggY2xhc3M9InN0MyIgZD0iTTE4MS4zLDU0LjdoNjMuNHYxNS41Yy01LjEsOS41LTEwLjYsMTguNC0xNi41LDI2LjVjLTUuOSw4LjEtMTIuNywxNi40LTIwLjUsMjQuN2gzOS40djE4LjNoLTY3Ljd2LTE1LjUKCQkJYzguMi04LjQsMTYtMTcuMiwyMy40LTI2LjRjNy40LTkuMiwxMy4xLTE3LjUsMTctMjQuOGgtMzguNlY1NC43eiIvPgoJCTxwYXRoIGNsYXNzPSJzdDQiIGQ9Ik0yNzEuNCwxNjUuNmMtNCwwLTcuNi0wLjUtMTAuNy0xLjRjLTMuMS0wLjktNi4yLTIuMS05LjEtMy43bDYuNS0xNC4zYzEuOCwxLDMuNiwxLjcsNS41LDIuMwoJCQljMS45LDAuNiwzLjgsMC45LDUuOCwwLjljMi44LDAsNS0wLjcsNi44LTIuMWMxLjgtMS40LDMuNS0zLjksNS4xLTcuNmwtMzUtODRoMjAuNWwyMy45LDYyLjNsMjEuOC02Mi4zaDIwbC0zMy40LDg2LjMKCQkJYy0xLjcsNC4zLTMuNCw4LTUuMiwxMWMtMS44LDMtMy44LDUuNC02LDcuMmMtMi4yLDEuOS00LjcsMy4yLTcuMyw0LjFDMjc3LjgsMTY1LjIsMjc0LjgsMTY1LjYsMjcxLjQsMTY1LjZ6Ii8+CgkJPHBhdGggY2xhc3M9InN0NSIgZD0iTTQxNy4yLDk3LjJjMCw2LjUtMC45LDEyLjYtMi44LDE4LjFjLTEuOSw1LjUtNC42LDEwLjMtOC4yLDE0LjJjLTMuNiwzLjktOCw3LTEzLjIsOS4xCgkJCWMtNS4yLDIuMS0xMC45LDMuMi0xNy4xLDMuMmMtMTIuNiwwLTIyLjctNC4xLTMwLjMtMTIuMmMtNy41LTguMS0xMS4zLTE4LjktMTEuMy0zMi4zYzAtMTMuMywzLjgtMjQsMTEuMy0zMi4yCgkJCWM3LjUtOC4xLDE3LjYtMTIuMiwzMC4zLTEyLjJjNi4yLDAsMTEuOSwxLjEsMTcuMSwzLjJjNS4yLDIuMSw5LjYsNS4xLDEzLjIsOS4xYzMuNiwzLjksNi4zLDguNiw4LjIsMTQuMQoJCQlDNDE2LjIsODQuNiw0MTcuMiw5MC42LDQxNy4yLDk3LjJ6IE0zNTcuNiw5Ny4yYzAsNC45LDAuNyw5LjQsMi4xLDEzLjVjMS40LDQuMSwzLjUsNy4yLDYuNCw5LjFjMi45LDIsNi4xLDMsOS42LDMKCQkJYzUuOCwwLDEwLjItMi4zLDEzLjMtNi44YzMuMS00LjUsNC43LTEwLjgsNC43LTE4LjhjMC03LjktMS42LTE0LjEtNC43LTE4LjZjLTMuMS00LjUtNy41LTYuOC0xMy4zLTYuOGMtMy41LDAtNi43LDAuOS05LjMsMi43CgkJCWMtMi43LDEuOC00LjgsNC43LTYuNCw4LjZDMzU4LjQsODYuOSwzNTcuNiw5MS42LDM1Ny42LDk3LjJ6Ii8+CgkJPHBhdGggY2xhc3M9InN0NSIgZD0iTTQ0Ny44LDEzOS43SDQyNVY2MC4xYzUuMi0yLjIsMTEuMi00LDE4LTUuM2M2LjgtMS4zLDEzLjMtMiwxOS42LTJjMTIuMiwwLDIxLjYsMi45LDI4LjMsOC44CgkJCWM2LjcsNS45LDEwLDE0LjMsMTAsMjUuM3Y1Mi45aC0yM1Y4OC41YzAtMTEuMi01LjItMTYuOC0xNS41LTE2LjhjLTUuNCwwLTEwLjMsMS0xNC42LDNWMTM5Ljd6Ii8+CgkJPHBhdGggY2xhc3M9InN0NSIgZD0iTTUzNC42LDE5LjJWMTA5YzAsNC41LDAuNyw4LDIuMSwxMC4zYzEuNCwyLjMsMy43LDMuNSw2LjksMy41YzEuOCwwLDMuNC0wLjIsNC44LTAuNWwxLjcsMTguMQoJCQljLTQuMiwwLjktOC4xLDEuMy0xMS42LDEuM2MtMTcuOSwwLTI2LjgtMTAuOC0yNi44LTMyLjRWMjAuNUw1MzQuNiwxOS4yeiIvPgoJCTxwYXRoIGNsYXNzPSJzdDUiIGQ9Ik01NjUuOCw0My40Yy00LjEsMC03LjMtMS4yLTkuNy0zLjVjLTIuNC0yLjMtMy42LTUuNC0zLjYtOS4zYzAtMy45LDEuMi03LDMuNi05LjNjMi40LTIuMyw1LjYtMy41LDkuNy0zLjUKCQkJYzQsMCw3LjIsMS4yLDkuNiwzLjZjMi40LDIuNCwzLjYsNS41LDMuNiw5LjJjMCwzLjgtMS4yLDYuOC0zLjYsOS4yQzU3Myw0Mi4yLDU2OS44LDQzLjQsNTY1LjgsNDMuNHogTTU3Ny4zLDU0Ljd2ODVoLTIzdi04NQoJCQlINTc3LjN6Ii8+CgkJPHBhdGggY2xhc3M9InN0NSIgZD0iTTYxMi43LDEzOS43SDU5MFY2MC4xYzUuMi0yLjIsMTEuMi00LDE4LTUuM2M2LjgtMS4zLDEzLjMtMiwxOS42LTJjMTIuMiwwLDIxLjYsMi45LDI4LjMsOC44CgkJCWM2LjcsNS45LDEwLDE0LjMsMTAsMjUuM3Y1Mi45aC0yM1Y4OC41YzAtMTEuMi01LjItMTYuOC0xNS41LTE2LjhjLTUuNCwwLTEwLjMsMS0xNC42LDNWMTM5Ljd6Ii8+CgkJPHBhdGggY2xhc3M9InN0NSIgZD0iTTc0My4xLDExNy42bDMuNywxOC41Yy0zLjcsMS43LTguMSwzLTEzLjMsNC4xYy01LjIsMS4xLTEwLjUsMS42LTE1LjgsMS42Yy02LjUsMC0xMi42LTEtMTguMi0zLjEKCQkJYy01LjYtMi4xLTEwLjQtNS0xNC40LTguOWMtNC0zLjktNy4xLTguNi05LjItMTQuMmMtMi4yLTUuNi0zLjItMTEuNy0zLjItMTguNGMwLTYuNCwxLTEyLjQsMy0xNy45czQuOC0xMC4yLDguNS0xNC4xCgkJCWMzLjctMy45LDgtNywxMy4xLTkuMWM1LjEtMi4yLDEwLjYtMy4yLDE2LjYtMy4yYzEwLjgsMCwxOS41LDMuNSwyNi4xLDEwLjVjNi43LDcsMTAsMTYuMSwxMCwyNy4zYzAsNC0wLjIsOC4yLTAuNywxMi42aC01Mi42CgkJCWMyLjEsMTIuOSw5LjksMTkuMywyMy4zLDE5LjNDNzI3LjgsMTIyLjQsNzM1LjUsMTIwLjgsNzQzLjEsMTE3LjZ6IE03MTMuOSw3MWMtNC44LDAtOC43LDEuNi0xMS43LDQuOGMtMy4xLDMuMi01LDcuNy01LjcsMTMuMwoJCQlINzI4di0yYzAtNC44LTEuMi04LjYtMy43LTExLjZDNzIxLjgsNzIuNSw3MTguMyw3MSw3MTMuOSw3MXoiLz4KCTwvZz4KCTxyZWN0IHg9IjU1NC40IiB5PSI1NC43IiBjbGFzcz0ic3Q2IiB3aWR0aD0iMjMiIGhlaWdodD0iODUiLz4KCTxwYXRoIGNsYXNzPSJzdDMiIGQ9Ik01NjUuOCw0My40Yy00LjEsMC03LjMtMS4yLTkuNy0zLjVjLTIuNC0yLjMtMy42LTUuNC0zLjYtOS4zYzAtMy45LDEuMi03LDMuNi05LjNjMi40LTIuMyw1LjYtMy41LDkuNy0zLjUKCQljNCwwLDcuMiwxLjIsOS42LDMuNmMyLjQsMi40LDMuNiw1LjUsMy42LDkuMmMwLDMuOC0xLjIsNi44LTMuNiw5LjJDNTczLDQyLjIsNTY5LjgsNDMuNCw1NjUuOCw0My40eiIvPgo8L2c+Cjwvc3ZnPgo=">
+        <span class="logo-ph wm wm-eazy"><b>eazy</b>online</span>
+        <input type="file" accept="image/*" hidden onchange="setLogo(this)">
+        <span class="logo-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> logo</span>
+      </div>
+      <span class="brand-x">&times;</span>
+      <div class="logoslot logoslot-dark has-logo" title="Klik om een ander logo te kiezen" onclick="pickLogo(this)">
+        <img class="logo-img" alt="Effectzorg" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjAuMywgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA4ODUuOCAxMzkuNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgODg1LjggMTM5LjQ7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbDojMkUzRDRCO30KCS5zdDF7ZmlsbDojRkZGRkZGO30KCS5zdDJ7ZmlsbDojMzRDQ0JGO30KPC9zdHlsZT4KPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSI0OTYuNCwxNC42IDQ4Ni4xLDE0LjYgNDg0LjIsNy44IDQ5NC4zLDcuOCAiLz4KPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSI0ODQuMiwxMTQuNiA0OTQuNCwxMTQuNiA0OTMuMiwxMjEuMyA0ODQsMTIxLjMgIi8+CjxnPgoJPHBhdGggY2xhc3M9InN0MSIgZD0iTTY5LjQsNDIuOUg0MC44djE1LjZINjZWNzNINDAuOHYxN2gyOC42djE1LjFIMjJWMjcuOGg0Ny40VjQyLjl6Ii8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNODEuNiwyNy44aDUwLjN2MTUuMWgtMzEuNXYxNi4ySDEyNHYxNC42aC0yMy42VjEwNUg4MS42VjI3Ljh6Ii8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNMTQxLjksMjcuOGg1MC4zdjE1LjFoLTMxLjV2MTYuMmgyMy42djE0LjZoLTIzLjZWMTA1aC0xOC44VjI3Ljh6Ii8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNMjQ5LjYsNDIuOUgyMjF2MTUuNmgyNS4yVjczSDIyMXYxN2gyOC42djE1LjFoLTQ3LjRWMjcuOGg0Ny40VjQyLjl6Ii8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNMjk3LjUsMjYuOGMxOC4zLDAsMzIuMywxMC4zLDM2LjcsMjcuMmgtMjAuN2MtMy4yLTYuNi05LTEwLTE2LjItMTBjLTExLjYsMC0xOS41LDguNS0xOS41LDIyLjIKCQlzNy45LDIyLjIsMTkuNSwyMi4yYzcuMiwwLDEzLTMuNCwxNi4yLTEwaDIwLjljLTQuMywxNi43LTE4LjMsMjctMzYuNywyN2MtMjIuOCwwLTM4LjktMTYuMi0zOC45LTM5LjRTMjc0LjcsMjYuOCwyOTcuNSwyNi44eiIvPgoJPHBhdGggY2xhc3M9InN0MSIgZD0iTTM0MS42LDI3LjhoNTkuOHYxNS4xSDM4MXY2Mi4yaC0xOC44VjQyLjloLTIwLjZWMjcuOHoiLz4KPC9nPgo8Zz4KCTxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik02MjkuMyw0Mi43TDU5Niw5MC4zaDMzLjN2MTUuNGgtNTQuN1Y5MS40bDMzLjEtNDcuNmgtMzMuMVYyOC4yaDU0LjdWNDIuN3oiLz4KCTxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik02NzguNCwxMDYuNWMtMjEuOSwwLTM5LjctMTYuNC0zOS43LTM5LjdzMTcuOC0zOS41LDM5LjctMzkuNWMyMiwwLDM5LjUsMTYuMiwzOS41LDM5LjUKCQlDNzE3LjksOTAsNzAwLjIsMTA2LjUsNjc4LjQsMTA2LjV6IE02NzguNCw4OS4zYzEyLjQsMCwyMC40LTksMjAuNC0yMi41YzAtMTMuOC04LTIyLjUtMjAuNC0yMi41Yy0xMi41LDAtMjAuNiw4LjctMjAuNiwyMi41CgkJQzY1Ny44LDgwLjMsNjY1LjgsODkuMyw2NzguNCw4OS4zeiIvPgoJPHBhdGggY2xhc3M9InN0MiIgZD0iTTc2MCwyOC4yYzE5LDAsMjguNSwxMC45LDI4LjUsMjQuNGMwLDkuNi01LjMsMTguOC0xNy4yLDIyLjNsMTcuOCwzMC43aC0yMS4ybC0xNi4xLTI5LjNoLTQuNXYyOS4zaC0xOC44CgkJVjI4LjJINzYweiBNNzU4LjksNDRoLTExLjd2MTkuMWgxMS43YzcuMSwwLDEwLjMtMy43LDEwLjMtOS42Qzc2OS4yLDQ3LjcsNzY2LDQ0LDc1OC45LDQ0eiIvPgoJPHBhdGggY2xhc3M9InN0MiIgZD0iTTg3Mi40LDUyLjhoLTIwLjljLTIuOS01LjEtOC4yLTcuOS0xNS4zLTcuOWMtMTIuMSwwLTIwLjEsOC41LTIwLjEsMjJjMCwxNC4zLDguMiwyMi43LDIxLjcsMjIuNwoJCWM5LjMsMCwxNS45LTUsMTguOC0xMy43aC0yNFY2Mmg0MXYxNy41Yy00LDEzLjMtMTYuOSwyNi43LTM3LjMsMjYuN2MtMjMuMSwwLTM5LjQtMTYuMi0zOS40LTM5LjRzMTYuMi0zOS40LDM5LjQtMzkuNAoJCUM4NTQuOSwyNy40LDg2OC40LDM2LjksODcyLjQsNTIuOHoiLz4KPC9nPgo8Y2lyY2xlIGNsYXNzPSJzdDEiIGN4PSI0ODQiIGN5PSI2NC42IiByPSI1Ni43Ii8+CjxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik01MjIuOSw1MC42VjM3LjloLTU5LjN2MTMuMmgzMS4zbC0zMS4zLDI3LjV2MTIuNWg3OS43Yy05LjUsMTgtMjguNSwzMC4yLTUwLjIsMzAuMgoJYy0zMS4zLDAtNTYuNy0yNS40LTU2LjctNTYuN3MyNS40LTU2LjcsNTYuNy01Ni43czU2LjcsMjUuNCw1Ni43LDU2LjdjMCw0LjctMC41LDktMS42LDEzLjNoLTU3LjRMNTIyLjksNTAuNnoiLz4KPGc+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNTQ4LjUsNzcuOWMtMS4xLDQuNy0yLjcsOS4yLTUsMTMuM2gtNzkuOVY3OC43bDMxLjMtMjcuNWgtMzEuM1YzNy45aDU5LjN2MTIuNWwtMzEuOCwyNy4zaDU3LjRMNTQ4LjUsNzcuOQoJCUw1NDguNSw3Ny45eiIvPgo8L2c+Cjwvc3ZnPgo=">
+        <span class="logo-ph wm wm-effect">Effect<i>zorg</i></span>
+        <input type="file" accept="image/*" hidden onchange="setLogo(this)">
+        <span class="logo-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> logo</span>
+      </div>
+    </div>
+
+    <div class="cover">
+      <div class="cover-eyebrow"><span class="sq"></span> Intake · wat moet de software kunnen</div>
+      <h1>Effectzorg — de <em>uitvraag</em> voor de nieuwe software.</h1>
+      <p class="lead">Voordat we bouwen, brengen we eerst in kaart hoe er nú gewerkt wordt: wat er handmatig gebeurt, welke functionaliteit ontbreekt en hoe het ideale proces eruitziet. Dit vullen we per collega in. Daarnaast vragen we tijdelijk toegang tot de huidige systemen, zodat we de structuur kunnen bekijken.</p>
+      <div class="cover-meta">
+        <div class="meta-pill"><label>Datum</label><input type="text" placeholder="dd-mm-jjjj"></div>
+        <div class="meta-pill"><label>Project</label><input type="text" value="Software Effectzorg"></div>
+        <div class="meta-pill"><label>Contactpersoon</label><input type="text" placeholder="Naam"></div>
+      </div>
+    </div>
+
+    <div class="doc-inner">
+
+      <div class="how">
+        <div class="how-step"><span class="how-num">1</span><h4>Vul per collega in</h4><p>Klik bij Deel B op een naam om dat blok te openen en in te vullen. Iedereen vult zijn eigen deel.</p></div>
+        <div class="how-step"><span class="how-num">2</span><h4>Wees concreet</h4><p>Noem minuten en frequenties — "20 min, 10× per week" zegt meer dan "kost veel tijd".</p></div>
+        <div class="how-step"><span class="how-num">3</span><h4>Opslaan als PDF</h4><p>Klaar? Klik rechtsboven op "Opslaan als PDF" en stuur het bestand terug.</p></div>
+      </div>
+
+      <!-- DEEL A -->
+      <section>
+        <div class="sec-head">
+          <span class="eyebrow"><span class="ey-num">A</span> Toegang tot de systemen</span>
+          <h2>Mag EAZYONLINE tijdelijk meekijken onder een testaccount?</h2>
+          <p class="lead">Om te bepalen wat er qua structuur nog nodig is, willen we de huidige systemen van binnen bekijken — bij voorkeur een <strong>read-only testaccount</strong>, óf een <strong>demo-omgeving</strong> of <strong>GitHub-repository</strong>. Geef per systeem aan wat mogelijk is en wie toegang kan verlenen.</p>
+          <div class="sec-rule"></div>
+        </div>
+        <div class="access-grid" id="access"></div>
+      </section>
+
+      <!-- DEEL B -->
+      <section>
+        <div class="sec-head">
+          <span class="eyebrow"><span class="ey-num">B</span> Per collega</span>
+          <h2>Jouw werk, jouw wensen, jouw knelpunten</h2>
+          <p class="lead">Klik op je naam om je blok te openen. Per persoon: wat zou je willen, waar loop je tegenaan, wat doe je handmatig en welke functionaliteit mis je per systeem.</p>
+          <div class="sec-rule"></div>
+        </div>
+        <div class="pnav"><span class="pnav-label">Spring naar</span><div id="pnav-chips"></div></div>
+        <div id="team"></div>
+        <div class="add-person-wrap">
+          <button class="add-person" onclick="addColleague()">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Collega toevoegen
+          </button>
+        </div>
+      </section>
+
+      <!-- DEEL C: EXTERNE GEBRUIKERS -->
+      <section>
+        <div class="sec-head">
+          <span class="eyebrow"><span class="ey-num">C</span> Externe gebruikers</span>
+          <h2>Kandidaten &amp; werkgevers — de gebruikers van het portaal</h2>
+          <p class="lead">De software draait niet alleen om het interne team. De zorgprofessionals (kandidaten) en de zorginstellingen (werkgevers) zijn de belangrijkste gebruikers. Beschrijf wat zíj zelf moeten kunnen — dit is vaak het eigenlijke product.</p>
+          <div class="sec-rule"></div>
+        </div>
+        <div class="duo">
+          <div class="team-block">
+            <div class="tb-head"><div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="tb-h">Kandidaten <span class="opt">zorgprofessionals</span></div></div>
+            <div class="qbox"><span class="qlabel">Wat moeten kandidaten zelf kunnen?</span><p class="qhint">Denk aan: profiel aanmaken, beschikbaarheid doorgeven, openstaande diensten zien en oppakken, diploma\'s/documenten uploaden, uren indienen, onboarding en status volgen.</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+            <div class="qbox"><span class="qlabel">Aanmelden &amp; matchen</span><p class="qhint">Hoe melden kandidaten zich nu aan en hoe worden ze aan diensten gekoppeld? Hoe zou dat idealiter gaan?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+            <div class="qbox"><span class="qlabel">Mobiel gebruik</span><p class="qhint">Gebruiken kandidaten vooral hun telefoon? Moet het portaal mobiel-first zijn?</p><select><option>— kies —</option><option>Ja, mobiel is essentieel</option><option>Fijn, maar niet vereist</option><option>Nee, vooral desktop</option></select></div>
+          </div>
+          <div class="team-block">
+            <div class="tb-head"><div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M8 8h.01M8 12h.01M8 16h.01M11 8h.01M11 12h.01M11 16h.01"/></svg></div><div class="tb-h">Werkgevers <span class="opt">zorginstellingen</span></div></div>
+            <div class="qbox"><span class="qlabel">Wat moeten werkgevers zelf kunnen?</span><p class="qhint">Denk aan: personeel of diensten aanvragen, voorgestelde kandidaten en matches zien, gewerkte uren goedkeuren, facturen/overzichten inzien, contact opnemen.</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+            <div class="qbox"><span class="qlabel">Aanvraag van personeel</span><p class="qhint">Hoe vragen werkgevers nu personeel aan, en hoe zou dat idealiter verlopen?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+            <div class="qbox"><span class="qlabel">Eigen portaal / login?</span><p class="qhint">Krijgen werkgevers een eigen omgeving met login?</p><select><option>— kies —</option><option>Ja</option><option>Nee</option><option>Nog onbekend</option></select></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEEL D: SCOPE, DATA & COMPLIANCE -->
+      <section>
+        <div class="sec-head">
+          <span class="eyebrow"><span class="ey-num">D</span> Scope, data &amp; compliance</span>
+          <h2>De grote keuzes en de verplichte zaken</h2>
+          <p class="lead">Deze vragen bepalen de omvang, de planning én de wettelijke randvoorwaarden. Juist hier zit het grootste risico als het wordt overgeslagen.</p>
+          <div class="sec-rule"></div>
+        </div>
+        <div class="team-block">
+          <div class="tb-head"><div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></div><div class="tb-h">Scope &amp; aanpak</div></div>
+          <div class="qbox"><span class="qlabel">Vervangen of koppelen?</span><p class="qhint">Bouwen we één nieuw systeem dat de huidige software vervangt, of een schil eroverheen die de systemen koppelt? (Zie ook de keuze per systeem bij Deel A.)</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Minimale eerste versie (MVP)</span><p class="qhint">Als we klein beginnen: welke 2-3 dingen móét de eerste versie kunnen om al waarde te hebben?</p><textarea class="auto" placeholder="1.&#10;2.&#10;3."></textarea></div>
+          <div class="qbox"><span class="qlabel">Budget &amp; deadline</span><p class="qhint">Is er een richtbudget en een gewenste opleverdatum of harde deadline?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Vaste beslisser / contactpersoon</span><p class="qhint">Wie neemt namens Effectzorg de knopen door en is ons vaste aanspreekpunt?</p><input type="text" placeholder="Naam + rol"></div>
+        </div>
+        <div class="team-block" style="margin-top:16px">
+          <div class="tb-head"><div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.3 1.3"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.3-1.3"/></svg></div><div class="tb-h">Data &amp; koppelingen</div></div>
+          <div class="qbox"><span class="qlabel">Welke data zit er nu in de systemen?</span><p class="qhint">Bijv. kandidaten, dienstverbanden, planning, urenregistratie, facturen — en ongeveer hoeveel.</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Wat moet er mee (migratie)?</span><p class="qhint">Welke gegevens en hoeveel historie moeten over naar de nieuwe software? Wat mag achterblijven?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Koppelingen (API / export)</span><p class="qhint">Hebben de huidige systemen een API of export? En welke externe koppelingen zijn nodig — salarisadministratie, boekhouding/facturatie, planning, DigiD/iDIN?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+        </div>
+        <div class="team-block" style="margin-top:16px">
+          <div class="tb-head"><div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="tb-h">Compliance, privacy &amp; kwaliteit</div></div>
+          <div class="qbox"><span class="qlabel">Zorg-specifieke checks</span><p class="qhint">Welke verplichte controles horen erbij? Denk aan BIG-registratie, VOG, diploma-/certificaatcontrole, ID-verificatie (IDN) en urenregistratie volgens CAO.</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Privacy &amp; beveiliging (AVG)</span><p class="qhint">Het gaat om gevoelige (zorg)gegevens. Waar mag de data staan (NL/EU)? Zijn er verwerkersovereenkomsten, bewaartermijnen of eisen als tweestapsverificatie?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Wat werkt nu wél goed?</span><p class="qhint">Wat in de huidige werkwijze of systemen moet absoluut behouden blijven en mag niet verloren gaan?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Aantallen &amp; succes</span><p class="qhint">Hoeveel kandidaten, werkgevers en diensten per maand ongeveer? En waaraan merken we straks dat het project geslaagd is?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+        </div>
+      </section>
+
+      <!-- DEEL E: OVERKOEPELEND -->
+      <section>
+        <div class="sec-head">
+          <span class="eyebrow"><span class="ey-num">E</span> Overkoepelend</span>
+          <h2>Afronding</h2>
+          <p class="lead">Eén keer invullen — door of namens het team.</p>
+          <div class="sec-rule"></div>
+        </div>
+        <div class="team-block">
+          <div class="tb-head"><div class="tb-icon">&#931;</div><div class="tb-h">Teamniveau</div></div>
+          <div class="qbox"><span class="qlabel">Welke meldingen / workflows moeten automatisch lopen?</span><p class="qhint">En welke handelingen zouden idealiter volledig verdwijnen?</p><textarea class="auto" placeholder="Beschrijf hier…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Algemene opmerkingen</span><textarea class="auto" placeholder="Overige wensen of aandachtspunten voor de nieuwe software…"></textarea></div>
+          <div class="qbox"><span class="qlabel">Algemene bijlagen <span class="opt">optioneel</span></span><p class="qhint">Documenten, exports of screenshots die voor het hele project relevant zijn. Afbeeldingen verschijnen in de PDF; andere bestanden graag los meesturen.</p><div class="uploader"><label class="upbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Bestand toevoegen<input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv" hidden onchange="handleFiles(this)"></label><div class="uplist"></div></div></div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="doc-footer">
+      <strong>Klaar?</strong> Klik rechtsboven op <strong>Opslaan als PDF</strong> (kies bij printer "Opslaan als PDF") en stuur het ingevulde bestand terug naar EAZYONLINE. Bij het opslaan worden alle blokken automatisch uitgeklapt, ook als ze dichtgeklapt staan. Je antwoorden blijven bewaard zolang je dit bestand geopend houdt.
+    </div>
+
+  </main>
+
+<script>
+  const TEAM = [
+    {naam:'Giorgio Ashruf', functie:'Eigenaar — GGZ & GHZ'},
+    {naam:'Mario Tahir',    functie:'Eigenaar — GGZ'},
+    {naam:'Yamila',         functie:'Recruitment & bemiddeling'},
+    {naam:'Juliëtte',       functie:'Planner'},
+    {naam:'Armano',         functie:'Finance & Control'},
+    {naam:'Malou',          functie:'Administratie'},
+    {naam:'Ravi',           functie:'Boekhouding'},
+    {naam:'Aaliyah',        functie:'Social media & content'},
+  ];
+  const SYSTEMS = ['Odixus','Icadot','RecruitNow','Flexfact','Overige software'];
+  const ACCESS  = ['Odixus','Icadot','RecruitNow','Flexfact','Overige software'];
+  const opts = SYSTEMS.map(s => '<option>'+s+'</option>').join('');
+
+  function processEntry(){
+    return '<div class="entry">'+
+      '<div class="entry-top"><span class="entry-tag">Handmatige taak</span><button type="button" class="xbtn" onclick="removeEntry(this)" aria-label="Verwijderen">&times;</button></div>'+
+      '<label class="flabel">Wat doe je handmatig?</label>'+
+      '<textarea class="auto" placeholder="Bijv. dienstbevestigingen bijhouden in Excel en handmatig doormailen…"></textarea>'+
+      '<div class="entry-meta">'+
+        '<div class="fcol"><label class="flabel">Hoe vaak?</label><input type="text" placeholder="bv. 10× per week"></div>'+
+        '<div class="fcol"><label class="flabel">Tijd per keer</label><input type="text" placeholder="bv. 15 minuten"></div>'+
+      '</div></div>';
+  }
+  function gapEntry(){
+    return '<div class="entry">'+
+      '<div class="entry-top"><select class="syspill">'+opts+'</select><button type="button" class="xbtn" onclick="removeEntry(this)" aria-label="Verwijderen">&times;</button></div>'+
+      '<label class="flabel">Wat ontbreekt in dit systeem?</label>'+
+      '<textarea class="auto" placeholder="Welke functie mis je?"></textarea>'+
+      '<div class="entry-meta">'+
+        '<div class="fcol"><label class="flabel">Workaround nu</label><input type="text" placeholder="Hoe los je het nu op?"></div>'+
+        '<div class="fcol"><label class="flabel">Extra tijd</label><input type="text" placeholder="bv. 2 uur per week"></div>'+
+      '</div></div>';
+  }
+
+  function accBlock(p, idx, open){
+    const naam=(p.naam||'').replace(/"/g,'&quot;');
+    const func=(p.functie||'').replace(/"/g,'&quot;');
+    const nameDisp = p.naam ? p.naam : 'Naam collega';
+    const emptyCls = p.naam ? '' : ' is-empty';
+    const funcDisp = p.functie ? p.functie : '—';
+    return '<div class="acc'+(open?' open':'')+'" data-idx="'+idx+'" data-filled="0">'+
+      '<button type="button" class="acc-head" aria-expanded="'+(open?'true':'false')+'" onclick="toggleAcc(this)">'+
+        '<span class="acc-num">'+(idx+1)+'</span>'+
+        '<span class="acc-id"><span class="acc-name'+emptyCls+'" data-empty="Naam collega">'+nameDisp+'</span><span class="acc-func">'+funcDisp+'</span></span>'+
+        '<span class="acc-status" title="Ingevuld"></span>'+
+        '<svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'+
+      '</button>'+
+      '<div class="acc-body"'+(open?' style="max-height:none"':'')+'>'+
+        '<div class="acc-inner">'+
+          '<div class="pid2">'+
+            '<div class="fcol"><label class="flabel">Naam</label><input type="text" class="pname" value="'+naam+'" placeholder="Naam collega"></div>'+
+            '<div class="fcol"><label class="flabel">Functie</label><input type="text" class="pfunc" value="'+func+'" placeholder="Functie / rol"></div>'+
+          '</div>'+
+          '<div class="qbox"><span class="qlabel">Wensen</span><p class="qhint">Wat zou jouw werk makkelijker maken? Wat zou je graag willen in de nieuwe software?</p><textarea class="auto" placeholder="Schrijf hier jouw wensen…"></textarea></div>'+
+          '<div class="qbox"><span class="qlabel">Waar loop je tegenaan</span><p class="qhint">Welke knelpunten ervaar je nu in de systemen?</p><textarea class="auto" placeholder="Beschrijf de knelpunten…"></textarea></div>'+
+          '<div class="qgroup"><div class="qg-head"><span class="qlabel">Handmatige werkzaamheden buiten de systemen</span><p class="qhint">Wat doe je handmatig (Excel, Word, mail, dubbel invoeren, controles)? Wees concreet met tijd en frequentie.</p></div><div class="entries">'+processEntry()+'</div><button type="button" class="addrow" onclick="addProcess(this)">+ taak toevoegen</button></div>'+
+          '<div class="qgroup"><div class="qg-head"><span class="qlabel">Ontbrekende functionaliteit per systeem</span><p class="qhint">Welke functie mis je, in welk systeem, welke workaround gebruik je en hoeveel extra tijd kost dat?</p></div><div class="entries">'+gapEntry()+'</div><button type="button" class="addrow" onclick="addGap(this)">+ knelpunt toevoegen</button></div>'+
+          '<div class="qbox"><span class="qlabel">Gewenste werkwijze</span><p class="qhint">Hoe ziet jouw ideale proces eruit? Wat zou volledig geautomatiseerd moeten worden?</p><textarea class="auto" placeholder="Beschrijf hoe het idealiter zou werken…"></textarea></div>'+
+          '<div class="qgroup"><div class="qg-head"><span class="qlabel">Bijlagen / screenshots <span class="opt">optioneel</span></span><p class="qhint">Voeg screenshots toe van waar je vastloopt, of een bestand dat je nu gebruikt. Afbeeldingen verschijnen in de PDF; PDF/Excel graag los meesturen.</p></div><div class="uploader"><label class="upbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Bestand toevoegen<input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv" hidden onchange="handleFiles(this)"></label><div class="uplist"></div></div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  function accessCard(sys){
+    const isOther = (sys === 'Overige software');
+    const title = isOther ? '<input type="text" class="other-title" placeholder="Naam software…">' : '<h3>'+sys+'</h3>';
+    return '<div class="acard">'+
+      '<div class="acard-h"><span class="adot"></span>'+title+'</div>'+
+      '<div class="afields">'+
+        '<div class="afield wide"><label class="flabel">Wat doen we met dit systeem?</label><select><option>— kies —</option><option>Behouden zoals het is</option><option>Vervangen door de nieuwe software</option><option>Koppelen (via API / koppeling)</option><option>Nog onbekend</option></select></div>'+
+        '<div class="afield"><label class="flabel">Testaccount (read-only) mogelijk?</label><input type="text" placeholder="Ja / Nee — + login of contact"></div>'+
+        '<div class="afield"><label class="flabel">Demo-omgeving of GitHub-link</label><input type="text" placeholder="URL of repository"></div>'+
+        '<div class="afield"><label class="flabel">Wie kan toegang verlenen?</label><input type="text" placeholder="Naam / leverancier / beheerder"></div>'+
+        '<div class="afield"><label class="flabel">Welke modules / onderdelen?</label><input type="text" placeholder="bv. planning, facturatie…"></div>'+
+        '<div class="afield wide"><label class="flabel">Opmerkingen</label><textarea class="auto" placeholder="Beperkingen, kosten, bijzonderheden…"></textarea></div>'+
+      '</div></div>';
+  }
+
+  function grow(el){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
+  function growAll(){ document.querySelectorAll('textarea.auto').forEach(grow); }
+  function refreshOpenHeight(acc){ if(acc && acc.classList.contains('open')){ acc.querySelector('.acc-body').style.maxHeight='none'; } }
+
+  function setOpen(acc, open){
+    const body=acc.querySelector('.acc-body');
+    const head=acc.querySelector('.acc-head');
+    if(open){
+      acc.classList.add('open'); head.setAttribute('aria-expanded','true');
+      body.style.maxHeight=body.scrollHeight+'px';
+      const done=()=>{ if(acc.classList.contains('open')) body.style.maxHeight='none'; body.removeEventListener('transitionend',done); };
+      body.addEventListener('transitionend',done);
+    } else {
+      body.style.maxHeight=body.scrollHeight+'px';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ body.style.maxHeight='0px'; }));
+      acc.classList.remove('open'); head.setAttribute('aria-expanded','false');
+    }
+  }
+  function toggleAcc(btn){ const acc=btn.closest('.acc'); setOpen(acc, !acc.classList.contains('open')); }
+
+  let allOpen=false;
+  function updateToggleBtn(){ const b=document.getElementById('expandBtn'); if(b) b.textContent = allOpen ? 'Alles inklappen' : 'Alles uitklappen'; }
+  function expandAll(){ document.querySelectorAll('.acc').forEach(a=>{ if(!a.classList.contains('open')) setOpen(a,true); }); allOpen=true; updateToggleBtn(); }
+  function collapseAll(){ document.querySelectorAll('.acc').forEach(a=>{ if(a.classList.contains('open')) setOpen(a,false); }); allOpen=false; updateToggleBtn(); }
+  function toggleAll(){ allOpen ? collapseAll() : expandAll(); }
+
+  function goPerson(idx){
+    const acc=document.querySelector('.acc[data-idx="'+idx+'"]'); if(!acc) return;
+    if(!acc.classList.contains('open')) setOpen(acc,true);
+    setTimeout(()=>acc.scrollIntoView({behavior:'smooth',block:'start'}), 60);
+  }
+
+  function addProcess(btn){ const wrap=btn.closest('.qgroup').querySelector('.entries'); wrap.insertAdjacentHTML('beforeend', processEntry()); wrap.lastElementChild.querySelectorAll('textarea.auto').forEach(grow); refreshOpenHeight(btn.closest('.acc')); }
+  function addGap(btn){ const wrap=btn.closest('.qgroup').querySelector('.entries'); wrap.insertAdjacentHTML('beforeend', gapEntry()); wrap.lastElementChild.querySelectorAll('textarea.auto').forEach(grow); refreshOpenHeight(btn.closest('.acc')); }
+  function removeEntry(btn){ const entry=btn.closest('.entry'); const wrap=entry.parentElement; const acc=btn.closest('.acc'); if(wrap.children.length>1){ entry.remove(); } else { entry.querySelectorAll('input,textarea').forEach(f=>f.value=''); entry.querySelectorAll('select').forEach(s=>s.selectedIndex=0); } if(acc) updateFilled(acc); refreshOpenHeight(acc); }
+
+  function rebuildNav(){
+    const accs=[...document.querySelectorAll('#team .acc')];
+    document.getElementById('pnav-chips').innerHTML = accs.map(a=>{
+      const idx=a.dataset.idx;
+      const nm=a.querySelector('.pname').value.trim();
+      const filled=a.dataset.filled==='1';
+      return '<button class="navchip" data-idx="'+idx+'"'+(filled?' data-filled="1"':'')+' onclick="goPerson('+idx+')"><span class="nc-dot"></span><span class="nc-label">'+(nm||'Nieuwe collega')+'</span></button>';
+    }).join('');
+  }
+
+  function updateHeader(acc){
+    const nm=acc.querySelector('.pname').value.trim();
+    const fn=acc.querySelector('.pfunc').value.trim();
+    const ne=acc.querySelector('.acc-name'); ne.textContent=nm||ne.dataset.empty; ne.classList.toggle('is-empty', !nm);
+    acc.querySelector('.acc-func').textContent=fn||'—';
+    const chip=document.querySelector('.navchip[data-idx="'+acc.dataset.idx+'"]'); if(chip){ chip.querySelector('.nc-label').textContent=nm||'Nieuwe collega'; }
+  }
+  function updateFilled(acc){
+    const fields=acc.querySelectorAll('.acc-inner textarea, .acc-inner input:not(.pname):not(.pfunc)');
+    let filled=false; fields.forEach(f=>{ if(f.value && f.value.trim()) filled=true; });
+    acc.dataset.filled = filled?'1':'0';
+    const chip=document.querySelector('.navchip[data-idx="'+acc.dataset.idx+'"]'); if(chip){ if(filled) chip.setAttribute('data-filled','1'); else chip.removeAttribute('data-filled'); }
+  }
+
+  function addColleague(){
+    const host=document.getElementById('team');
+    const idx=host.querySelectorAll('.acc').length;
+    host.insertAdjacentHTML('beforeend', accBlock({naam:'',functie:''}, idx, true));
+    rebuildNav();
+    const acc=host.lastElementChild;
+    acc.querySelectorAll('textarea.auto').forEach(grow);
+    acc.querySelector('.acc-body').style.maxHeight='none';
+    setTimeout(()=>{ acc.scrollIntoView({behavior:'smooth',block:'center'}); const nm=acc.querySelector('.pname'); if(nm) nm.focus(); }, 60);
+  }
+
+  document.addEventListener('input', e=>{
+    const t=e.target;
+    if(t.matches('textarea.auto')){ grow(t); refreshOpenHeight(t.closest('.acc')); }
+    const acc = t.closest ? t.closest('.acc') : null;
+    if(acc){
+      if(t.classList.contains('pname')||t.classList.contains('pfunc')) updateHeader(acc);
+      updateFilled(acc);
+    }
+  });
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtSize(b){ if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(0)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+  function fileSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>'; }
+
+  function pickLogo(slot){ const i=slot.querySelector('input[type=file]'); if(i) i.click(); }
+  function setLogo(input){
+    const slot=input.closest('.logoslot');
+    const f=input.files && input.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=e=>{
+      let img=slot.querySelector('img.logo-img');
+      if(!img){ img=document.createElement('img'); img.className='logo-img'; img.alt='logo'; slot.insertBefore(img, slot.firstChild); }
+      img.src=e.target.result; slot.classList.add('has-logo');
+    };
+    r.readAsDataURL(f); input.value='';
+  }
+
+  function handleFiles(input){
+    const list=input.closest('.uploader').querySelector('.uplist');
+    const acc=input.closest('.acc');
+    Array.from(input.files||[]).forEach(f=>{
+      if(f.type.indexOf('image/')===0){
+        const r=new FileReader();
+        r.onload=e=>{ const d=document.createElement('div'); d.className='upitem upimg'; d.innerHTML='<img src="'+e.target.result+'" alt=""><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button><span class="upname">'+escapeHtml(f.name)+'</span>'; list.appendChild(d); refreshOpenHeight(acc); };
+        r.readAsDataURL(f);
+      } else {
+        const d=document.createElement('div'); d.className='upitem upfile';
+        d.innerHTML='<span class="upicon">'+fileSvg()+'</span><span class="upmeta"><span class="upname">'+escapeHtml(f.name)+'</span><span class="upsize">'+fmtSize(f.size)+' · stuur dit los mee met de mail</span></span><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button>';
+        list.appendChild(d); refreshOpenHeight(acc);
+      }
+    });
+    input.value='';
+  }
+  function removeFile(btn){ const acc=btn.closest('.acc'); btn.closest('.upitem').remove(); refreshOpenHeight(acc); }
+
+  (function(){
+    document.getElementById('access').innerHTML = ACCESS.map(accessCard).join('');
+    document.getElementById('team').innerHTML = TEAM.map((p,i)=>accBlock(p,i,i===0)).join('');
+    rebuildNav();
+    growAll();
+  })();
+</script>
+</body>
+</html>
