@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 // Public intake form
 Route::get('/', [SubmissionController::class, 'index'])->name('form.index');
 Route::post('/submissions', [SubmissionController::class, 'store'])->name('form.store');
+Route::get('/{submission}', [SubmissionController::class, 'edit'])->name('form.edit')->where('submission', '[0-9]+');
+Route::put('/submissions/{submission}', [SubmissionController::class, 'update'])->name('form.update');
 
 // File uploads
 Route::post('/uploads', [FileUploadController::class, 'store'])->name('uploads.store');

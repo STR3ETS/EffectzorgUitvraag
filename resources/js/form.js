@@ -372,9 +372,13 @@ function submitForm(){
 
   const data = collectFormData();
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  const existing = window.EXISTING_SUBMISSION;
+  const isEdit = existing && existing.id;
+  const url = isEdit ? '/submissions/' + existing.id : '/submissions';
+  const method = isEdit ? 'PUT' : 'POST';
 
-  fetch('/submissions', {
-    method: 'POST',
+  fetch(url, {
+    method: method,
     headers: {
       'Content-Type': 'application/json',
       'X-CSRF-TOKEN': csrfToken,
@@ -389,6 +393,18 @@ function submitForm(){
   .then(result => {
     showToast('Uitvraag succesvol opgeslagen!', 'success');
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg> Opgeslagen';
+
+    if(!isEdit && result.id){
+      // Redirect to the edit URL so the user can continue working
+      setTimeout(()=>{ window.location.href = '/' + result.id; }, 1000);
+      return;
+    }
+
+    // Update the in-memory submission so subsequent saves use PUT
+    if(result.id && !window.EXISTING_SUBMISSION){
+      window.EXISTING_SUBMISSION = { id: result.id };
+    }
+
     setTimeout(()=>{
       btn.disabled = false;
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Opslaan &amp; Versturen';
@@ -428,11 +444,180 @@ document.addEventListener('input', e=>{
   }
 });
 
+// ===== POPULATE FROM EXISTING DATA =====
+
+function populateForm(sub){
+  // Cover meta
+  if(sub.datum) document.getElementById('meta-datum').value = sub.datum;
+  if(sub.project_name) document.getElementById('meta-project').value = sub.project_name;
+  if(sub.contactpersoon) document.getElementById('meta-contact').value = sub.contactpersoon;
+
+  // Section A: System accesses
+  if(sub.system_accesses && sub.system_accesses.length){
+    document.querySelectorAll('#access .acard').forEach(card=>{
+      const sysName = card.dataset.system;
+      const isOther = (sysName === 'Overige software');
+      const match = sub.system_accesses.find(sa => {
+        if(isOther) return !ACCESS.slice(0,-1).includes(sa.system_name);
+        return sa.system_name === sysName;
+      });
+      if(!match) return;
+      if(isOther && match.system_name){
+        const otherInput = card.querySelector('.other-title');
+        if(otherInput) otherInput.value = match.system_name;
+      }
+      const actionSel = card.querySelector('[data-field="action"]');
+      if(actionSel && match.action) setSelectValue(actionSel, match.action);
+      setFieldValue(card, 'test_account', match.test_account);
+      setFieldValue(card, 'demo_url', match.demo_url);
+      setFieldValue(card, 'access_contact', match.access_contact);
+      setFieldValue(card, 'modules', match.modules);
+      setFieldValue(card, 'remarks', match.remarks);
+    });
+  }
+
+  // Section B: Colleagues
+  const teamHost = document.getElementById('team');
+  teamHost.innerHTML = '';
+  const colleagues = (sub.colleagues && sub.colleagues.length) ? sub.colleagues : TEAM.map(p=>({name:p.naam, function:p.functie}));
+  colleagues.forEach((col, i)=>{
+    teamHost.insertAdjacentHTML('beforeend', accBlock({naam:col.name||'', functie:col.function||''}, i, i===0));
+    const acc = teamHost.lastElementChild;
+
+    // Wishes, pain points, desired workflow
+    setFieldValue(acc, 'wishes', col.wishes);
+    setFieldValue(acc, 'pain_points', col.pain_points);
+    setFieldValue(acc, 'desired_workflow', col.desired_workflow);
+
+    // Manual tasks
+    if(col.manual_tasks && col.manual_tasks.length){
+      const taskGroup = acc.querySelector('[data-group="manual_tasks"]');
+      if(taskGroup){
+        const entries = taskGroup.querySelector('.entries');
+        entries.innerHTML = '';
+        col.manual_tasks.forEach(task=>{
+          entries.insertAdjacentHTML('beforeend', processEntry());
+          const entry = entries.lastElementChild;
+          setFieldValue(entry, 'description', task.description);
+          setFieldValue(entry, 'frequency', task.frequency);
+          setFieldValue(entry, 'time_per_task', task.time_per_task);
+        });
+      }
+    }
+
+    // Missing features
+    if(col.missing_features && col.missing_features.length){
+      const gapGroup = acc.querySelector('[data-group="missing_features"]');
+      if(gapGroup){
+        const entries = gapGroup.querySelector('.entries');
+        entries.innerHTML = '';
+        col.missing_features.forEach(feat=>{
+          entries.insertAdjacentHTML('beforeend', gapEntry());
+          const entry = entries.lastElementChild;
+          if(feat.system_name){
+            const sel = entry.querySelector('[data-field="system_name"]');
+            if(sel) setSelectValue(sel, feat.system_name);
+          }
+          setFieldValue(entry, 'description', feat.description);
+          setFieldValue(entry, 'workaround', feat.workaround);
+          setFieldValue(entry, 'extra_time', feat.extra_time);
+        });
+      }
+    }
+
+    // File uploads
+    if(col.file_uploads && col.file_uploads.length){
+      const uplist = acc.querySelector('.uplist');
+      if(uplist){
+        col.file_uploads.forEach(f=>{
+          const d = document.createElement('div');
+          d.className = 'upitem upfile';
+          d.dataset.fileId = f.id;
+          d.innerHTML = '<span class="upicon">'+fileSvg()+'</span><span class="upmeta"><span class="upname">'+escapeHtml(f.original_name)+'</span><span class="upsize">'+fmtSize(f.file_size)+'</span></span><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button>';
+          uplist.appendChild(d);
+        });
+      }
+    }
+
+    updateFilled(acc);
+  });
+
+  // Section C
+  setElValue('candidates_capabilities', sub.candidates_capabilities);
+  setElValue('candidates_matching', sub.candidates_matching);
+  if(sub.candidates_mobile) setSelectValue(document.getElementById('candidates_mobile'), sub.candidates_mobile);
+  setElValue('employers_capabilities', sub.employers_capabilities);
+  setElValue('employers_requesting', sub.employers_requesting);
+  if(sub.employers_portal) setSelectValue(document.getElementById('employers_portal'), sub.employers_portal);
+
+  // Section D
+  setElValue('scope_replace_or_connect', sub.scope_replace_or_connect);
+  setElValue('scope_mvp', sub.scope_mvp);
+  setElValue('scope_budget_deadline', sub.scope_budget_deadline);
+  setElValue('scope_decision_maker', sub.scope_decision_maker);
+  setElValue('data_current_systems', sub.data_current_systems);
+  setElValue('data_migration', sub.data_migration);
+  setElValue('data_api_integrations', sub.data_api_integrations);
+  setElValue('compliance_checks', sub.compliance_checks);
+  setElValue('compliance_privacy', sub.compliance_privacy);
+  setElValue('compliance_working_well', sub.compliance_working_well);
+  setElValue('compliance_numbers_success', sub.compliance_numbers_success);
+
+  // Section E
+  setElValue('overall_workflows', sub.overall_workflows);
+  setElValue('overall_remarks', sub.overall_remarks);
+
+  // Overall file uploads
+  if(sub.file_uploads && sub.file_uploads.length){
+    const uplist = document.querySelector('#overall-uploader .uplist');
+    if(uplist){
+      sub.file_uploads.forEach(f=>{
+        const d = document.createElement('div');
+        d.className = 'upitem upfile';
+        d.dataset.fileId = f.id;
+        d.innerHTML = '<span class="upicon">'+fileSvg()+'</span><span class="upmeta"><span class="upname">'+escapeHtml(f.original_name)+'</span><span class="upsize">'+fmtSize(f.file_size)+'</span></span><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button>';
+        uplist.appendChild(d);
+      });
+    }
+  }
+}
+
+function setFieldValue(container, field, value){
+  if(!value) return;
+  const el = container.querySelector('[data-field="'+field+'"]');
+  if(el) el.value = value;
+}
+
+function setElValue(id, value){
+  if(!value) return;
+  const el = document.getElementById(id);
+  if(el) el.value = value;
+}
+
+function setSelectValue(el, value){
+  if(!el || !value) return;
+  for(let i=0; i<el.options.length; i++){
+    if(el.options[i].value === value || el.options[i].text === value){
+      el.selectedIndex = i;
+      return;
+    }
+  }
+}
+
 // ===== INIT =====
 
 (function(){
+  const sub = window.EXISTING_SUBMISSION;
   document.getElementById('access').innerHTML = ACCESS.map(accessCard).join('');
-  document.getElementById('team').innerHTML = TEAM.map((p,i)=>accBlock(p,i,i===0)).join('');
+
+  if(sub){
+    // Editing existing submission
+    populateForm(sub);
+  } else {
+    // New form with defaults
+    document.getElementById('team').innerHTML = TEAM.map((p,i)=>accBlock(p,i,i===0)).join('');
+  }
+
   rebuildNav();
   growAll();
 })();

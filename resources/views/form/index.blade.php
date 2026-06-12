@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+@push('scripts')
+<script>
+    window.EXISTING_SUBMISSION = @json($submission);
+</script>
+@endpush
+
 @section('content')
 <div class="form-page">
 
