@@ -28,6 +28,8 @@ class FileUploadController extends Controller
             'id' => $upload->id,
             'original_name' => $upload->original_name,
             'file_size' => $upload->file_size,
+            'mime_type' => $upload->mime_type,
+            'url' => \Illuminate\Support\Facades\Storage::disk('public')->url($upload->file_path),
         ]);
     }
 

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Inzending #' . $submission->id . ' — Effectzorg Uitvraag')
+@section('title', 'Inzending #' . $submission->id . ' — Uitvraag')
 
 @section('content')
 <div class="mb-6 flex items-center justify-between">
@@ -10,8 +10,9 @@
     <p class="text-gray-500 text-sm mt-1">
       Aangemaakt op {{ $submission->created_at->format('d-m-Y H:i') }}
       @if($submission->submitted_at)
-        &middot; Verstuurd op {{ $submission->submitted_at->format('d-m-Y H:i') }}
+        &middot; Laatst verstuurd op {{ $submission->submitted_at->format('d-m-Y H:i') }}
       @endif
+      &middot; <a href="{{ url('/' . $submission->id) }}" class="text-blue-600 hover:underline" target="_blank">Formulier openen &rarr;</a>
     </p>
   </div>
   <div>
@@ -23,7 +24,7 @@
   </div>
 </div>
 
-{{-- Cover --}}
+{{-- Algemeen --}}
 <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
   <h2 class="text-lg font-semibold text-gray-800 mb-4">Algemeen</h2>
   <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -42,292 +43,130 @@
   </dl>
 </section>
 
-{{-- Sectie A: Systeemtoegang --}}
-<section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">A &mdash; Systeemtoegang</h2>
-  @if($submission->systemAccesses->isEmpty())
-    <p class="text-sm text-gray-400 italic">Geen systeemtoegang ingevuld.</p>
-  @else
-    <div class="space-y-4">
-      @foreach($submission->systemAccesses as $sa)
-        <div class="border border-gray-100 rounded-lg p-4 bg-gray-50">
-          <h3 class="font-medium text-gray-900 mb-3">{{ $sa->system_name }}</h3>
-          <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Actie</dt>
-              <dd class="mt-0.5 text-gray-900">{{ $sa->action ?: '—' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Testaccount</dt>
-              <dd class="mt-0.5 text-gray-900">{{ $sa->test_account ?: '—' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Demo URL</dt>
-              <dd class="mt-0.5 text-gray-900">
-                @if($sa->demo_url)
-                  <a href="{{ $sa->demo_url }}" target="_blank" class="text-blue-600 hover:underline">{{ $sa->demo_url }}</a>
-                @else
-                  —
-                @endif
-              </dd>
-            </div>
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Contactpersoon toegang</dt>
-              <dd class="mt-0.5 text-gray-900">{{ $sa->access_contact ?: '—' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Modules</dt>
-              <dd class="mt-0.5 text-gray-900">{{ $sa->modules ?: '—' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-semibold text-gray-500 uppercase">Opmerkingen</dt>
-              <dd class="mt-0.5 text-gray-900">{{ $sa->remarks ?: '—' }}</dd>
-            </div>
-          </dl>
-        </div>
-      @endforeach
-    </div>
-  @endif
-</section>
+@php
+  $answers = $submission->answers ?? [];
+  $sections = $answers['sections'] ?? [];
+@endphp
 
-{{-- Sectie B: Collega's --}}
-<section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">B &mdash; Collega's</h2>
-  @if($submission->colleagues->isEmpty())
-    <p class="text-sm text-gray-400 italic">Geen collega's ingevuld.</p>
-  @else
-    <div class="space-y-6">
-      @foreach($submission->colleagues as $colleague)
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-          <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-            <h3 class="font-medium text-gray-900">{{ $colleague->name ?: 'Collega ' . ($loop->index + 1) }}</h3>
-            @if($colleague->function)
-              <p class="text-xs text-gray-500 mt-0.5">{{ $colleague->function }}</p>
-            @endif
-          </div>
-          <div class="p-4 space-y-4">
-            {{-- Wensen, pijnpunten, gewenste workflow --}}
-            <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div>
-                <dt class="text-xs font-semibold text-gray-500 uppercase">Wensen</dt>
-                <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $colleague->wishes ?: '—' }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs font-semibold text-gray-500 uppercase">Pijnpunten</dt>
-                <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $colleague->pain_points ?: '—' }}</dd>
-              </div>
-              <div>
-                <dt class="text-xs font-semibold text-gray-500 uppercase">Gewenste workflow</dt>
-                <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $colleague->desired_workflow ?: '—' }}</dd>
-              </div>
-            </dl>
+@forelse($sections as $section)
+  <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-5">
+      @if(!empty($section['id']))<span class="text-blue-600">{{ $section['id'] }}</span> &mdash; @endif{{ $section['title'] ?? '' }}
+    </h2>
 
-            {{-- Handmatige taken --}}
-            @if($colleague->manualTasks->isNotEmpty())
-              <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Handmatige taken</h4>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm border border-gray-100 rounded">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Omschrijving</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Frequentie</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Tijd per keer</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      @foreach($colleague->manualTasks as $task)
-                        <tr>
-                          <td class="px-3 py-2 text-gray-900">{{ $task->description ?: '—' }}</td>
-                          <td class="px-3 py-2 text-gray-700">{{ $task->frequency ?: '—' }}</td>
-                          <td class="px-3 py-2 text-gray-700">{{ $task->time_per_task ?: '—' }}</td>
-                        </tr>
-                      @endforeach
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            @endif
+    @php $lastGroup = null; @endphp
+    <div class="space-y-5">
+      @foreach(($section['items'] ?? []) as $item)
+        @php
+          $group = $item['group'] ?? null;
+          $type = $item['type'] ?? 'text';
+          $label = $item['label'] ?? '';
+          $value = $item['value'] ?? null;
+        @endphp
 
-            {{-- Ontbrekende features --}}
-            @if($colleague->missingFeatures->isNotEmpty())
-              <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Ontbrekende features</h4>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm border border-gray-100 rounded">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Systeem</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Omschrijving</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Workaround</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Extra tijd</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      @foreach($colleague->missingFeatures as $mf)
-                        <tr>
-                          <td class="px-3 py-2 text-gray-900">{{ $mf->system_name ?: '—' }}</td>
-                          <td class="px-3 py-2 text-gray-700">{{ $mf->description ?: '—' }}</td>
-                          <td class="px-3 py-2 text-gray-700">{{ $mf->workaround ?: '—' }}</td>
-                          <td class="px-3 py-2 text-gray-700">{{ $mf->extra_time ?: '—' }}</td>
-                        </tr>
-                      @endforeach
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            @endif
+        @if($group && $group !== $lastGroup)
+          @php $lastGroup = $group; @endphp
+          <h3 class="text-sm font-bold text-gray-900 pt-4 mt-2 border-t border-gray-100">{{ $group }}</h3>
+        @endif
 
-            {{-- Bestanden --}}
-            @if($colleague->fileUploads->isNotEmpty())
-              <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Bestanden</h4>
-                <ul class="space-y-1">
-                  @foreach($colleague->fileUploads as $file)
-                    <li class="text-sm text-blue-600">
-                      <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="hover:underline">{{ $file->original_name }}</a>
-                      <span class="text-gray-400 text-xs">({{ number_format($file->file_size / 1024, 0) }} KB)</span>
+        <div>
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ $label ?: '—' }}</div>
+
+          @switch($type)
+            @case('checks')
+              @if(!empty($value))
+                <ul class="flex flex-wrap gap-2">
+                  @foreach($value as $opt)
+                    <li class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 rounded-full px-3 py-1 text-sm">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      {{ $opt }}
                     </li>
                   @endforeach
                 </ul>
-              </div>
-            @endif
-          </div>
+              @else
+                <p class="text-sm text-gray-400 italic">Niets aangevinkt</p>
+              @endif
+              @break
+
+            @case('steps')
+              @if(!empty($value))
+                <ol class="space-y-2">
+                  @foreach($value as $i => $step)
+                    <li class="border border-gray-100 rounded-lg bg-gray-50 p-3">
+                      <div class="text-xs font-semibold text-gray-500 mb-1.5">Stap {{ $i + 1 }}</div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <div class="text-xs text-gray-500">{{ $step['actor_label'] ?? 'Gebruiker' }}</div>
+                          <div class="text-gray-900 whitespace-pre-line">{{ ($step['actor'] ?? '') ?: '—' }}</div>
+                        </div>
+                        <div>
+                          <div class="text-xs text-gray-500">{{ $step['system_label'] ?? 'Systeem' }}</div>
+                          <div class="text-gray-900 whitespace-pre-line">{{ ($step['system'] ?? '') ?: '—' }}</div>
+                        </div>
+                      </div>
+                    </li>
+                  @endforeach
+                </ol>
+              @else
+                <p class="text-sm text-gray-400 italic">Geen stappen ingevuld</p>
+              @endif
+              @break
+
+            @case('scenarios')
+              @if(!empty($value))
+                <div class="space-y-2">
+                  @foreach($value as $scen)
+                    <div class="border border-gray-100 rounded-lg bg-gray-50 p-3 text-sm">
+                      <div class="font-medium text-gray-900">{{ ($scen['name'] ?? '') ?: 'Scenario' }}</div>
+                      <div class="text-gray-700 whitespace-pre-line mt-1">{{ ($scen['description'] ?? '') ?: '—' }}</div>
+                    </div>
+                  @endforeach
+                </div>
+              @else
+                <p class="text-sm text-gray-400 italic">Geen scenario's ingevuld</p>
+              @endif
+              @break
+
+            @case('files')
+              @if(!empty($value))
+                <div class="flex flex-wrap gap-3">
+                  @foreach($value as $file)
+                    <a href="{{ $file['preview'] ?? '#' }}" target="_blank" class="inline-flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-blue-600 hover:bg-gray-50">
+                      @if(!empty($file['image']) && !empty($file['preview']))
+                        <img src="{{ $file['preview'] }}" alt="" class="w-10 h-10 object-cover rounded">
+                      @else
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                      @endif
+                      {{ $file['name'] ?? 'Bestand' }}
+                    </a>
+                  @endforeach
+                </div>
+              @else
+                <p class="text-sm text-gray-400 italic">Geen bestanden</p>
+              @endif
+              @break
+
+            @default
+              @if(is_array($value))
+                <p class="text-sm text-gray-900 whitespace-pre-line">{{ implode(', ', $value) ?: '—' }}</p>
+              @else
+                <p class="text-sm text-gray-900 whitespace-pre-line">{{ ($value ?? '') !== '' ? $value : '—' }}</p>
+              @endif
+          @endswitch
         </div>
       @endforeach
     </div>
-  @endif
-</section>
+  </section>
+@empty
+  <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center mb-6">
+    <p class="text-gray-500 text-sm">Deze inzending bevat nog geen antwoorden.</p>
+  </section>
+@endforelse
 
-{{-- Sectie C: Externe gebruikers --}}
-<section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">C &mdash; Externe gebruikers</h2>
-  <div class="space-y-6">
-    <div>
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">Kandidaten</h3>
-      <dl class="space-y-3 text-sm">
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Mogelijkheden</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->candidates_capabilities ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Matching</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->candidates_matching ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Mobiel / App</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->candidates_mobile ?: '—' }}</dd>
-        </div>
-      </dl>
-    </div>
-    <hr class="border-gray-100">
-    <div>
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">Opdrachtgevers</h3>
-      <dl class="space-y-3 text-sm">
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Mogelijkheden</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->employers_capabilities ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Aanvragen</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->employers_requesting ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Portaal</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->employers_portal ?: '—' }}</dd>
-        </div>
-      </dl>
-    </div>
-  </div>
-</section>
-
-{{-- Sectie D: Scope, Data & Compliance --}}
-<section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">D &mdash; Scope, Data &amp; Compliance</h2>
-  <div class="space-y-6">
-    <div>
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">Scope</h3>
-      <dl class="space-y-3 text-sm">
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Vervangen of koppelen</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->scope_replace_or_connect ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">MVP</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->scope_mvp ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Budget &amp; deadline</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->scope_budget_deadline ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Beslisser</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->scope_decision_maker ?: '—' }}</dd>
-        </div>
-      </dl>
-    </div>
-    <hr class="border-gray-100">
-    <div>
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">Data</h3>
-      <dl class="space-y-3 text-sm">
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Huidige systemen</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->data_current_systems ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Migratie</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->data_migration ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">API-integraties</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->data_api_integrations ?: '—' }}</dd>
-        </div>
-      </dl>
-    </div>
-    <hr class="border-gray-100">
-    <div>
-      <h3 class="text-sm font-semibold text-gray-700 mb-3">Compliance</h3>
-      <dl class="space-y-3 text-sm">
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Controles</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->compliance_checks ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Privacy</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->compliance_privacy ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Wat werkt goed</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->compliance_working_well ?: '—' }}</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-semibold text-gray-500 uppercase">Cijfers &amp; succes</dt>
-          <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->compliance_numbers_success ?: '—' }}</dd>
-        </div>
-      </dl>
-    </div>
-  </div>
-</section>
-
-{{-- Sectie E: Overall --}}
-<section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">E &mdash; Overall</h2>
-  <dl class="space-y-3 text-sm">
-    <div>
-      <dt class="text-xs font-semibold text-gray-500 uppercase">Workflows</dt>
-      <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->overall_workflows ?: '—' }}</dd>
-    </div>
-    <div>
-      <dt class="text-xs font-semibold text-gray-500 uppercase">Opmerkingen</dt>
-      <dd class="mt-1 text-gray-900 whitespace-pre-line">{{ $submission->overall_remarks ?: '—' }}</dd>
-    </div>
-  </dl>
-</section>
-
-{{-- Bijlagen op submission-niveau --}}
+{{-- Alle bijlagen (volledige lijst uit opslag) --}}
 @if($submission->fileUploads->isNotEmpty())
 <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">Bijlagen</h2>
+  <h2 class="text-lg font-semibold text-gray-800 mb-4">Alle bijlagen</h2>
   <ul class="space-y-1">
     @foreach($submission->fileUploads as $file)
       <li class="text-sm text-blue-600">

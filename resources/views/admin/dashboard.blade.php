@@ -23,7 +23,6 @@
           <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Datum</th>
           <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Project</th>
           <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contactpersoon</th>
-          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Collega's</th>
           <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
           <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Verstuurd</th>
           <th class="px-6 py-3"></th>
@@ -36,11 +35,6 @@
           <td class="px-6 py-4 text-sm text-gray-700">{{ $sub->datum ?: '—' }}</td>
           <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $sub->project_name ?: '—' }}</td>
           <td class="px-6 py-4 text-sm text-gray-700">{{ $sub->contactpersoon ?: '—' }}</td>
-          <td class="px-6 py-4 text-sm text-gray-500">
-            <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full px-2.5 py-0.5 text-xs font-medium">
-              {{ $sub->colleagues_count }}
-            </span>
-          </td>
           <td class="px-6 py-4 text-sm">
             @if($sub->status === 'submitted')
               <span class="inline-flex items-center gap-1 bg-green-50 text-green-700 rounded-full px-2.5 py-0.5 text-xs font-medium">Verstuurd</span>

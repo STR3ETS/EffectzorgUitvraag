@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Studiomatch — Uitvraag MVP software</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500&display=swap" rel="stylesheet">
-@verbatim
 <style>
   :root{
     --ink:#1c1533;
@@ -167,13 +165,6 @@
   .brand-x{color:var(--muted);font-size:17px;font-weight:300;user-select:none}
   .logo-edit{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:4px;font-family:'Spline Sans Mono';font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border:1px solid #ddc9fb;border-radius:999px;padding:2px 9px;opacity:0;transition:opacity .15s;pointer-events:none;white-space:nowrap}
   .logoslot:hover .logo-edit{opacity:1}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120%);z-index:200;max-width:min(90vw,460px);padding:13px 20px;border-radius:12px;background:var(--ink);color:#fff;font-size:14.5px;font-weight:600;line-height:1.5;box-shadow:0 18px 40px -14px rgba(28,21,51,.55);white-space:pre-line;opacity:0;transition:transform .3s ease, opacity .3s ease}
-  .toast.show{transform:translate(-50%,0);opacity:1}
-  .toast.success{background:#127a53}
-  .toast.error{background:#b3372f}
-  .btn[disabled]{opacity:.6;cursor:progress}
-  .animate-spin{animation:spin 1s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
   @media (max-width:740px){
     .how,.duo,.q2,.entry-meta,.checks{grid-template-columns:1fr}
     .tb-title,.tb-kicker{display:none}
@@ -197,7 +188,6 @@
     .brandbar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
-@endverbatim
 </head>
 <body>
 
@@ -211,13 +201,9 @@
     </div>
     <div class="tb-actions">
       <button class="btn btn-ghost" id="expandBtn" onclick="toggleAll()">Alles uitklappen</button>
-      <button class="btn btn-ghost" onclick="expandAll();window.print()">
+      <button class="btn btn-primary" onclick="expandAll();window.print()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-        PDF
-      </button>
-      <button class="btn btn-primary" id="saveBtn" style="background:var(--accent)" onclick="submitForm()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-        Opslaan &amp; Versturen
+        Opslaan als PDF
       </button>
     </div>
   </div>
@@ -245,9 +231,9 @@
       <h1>Studiomatch — de <em>uitvraag</em> voor de MVP.</h1>
       <p class="lead">Studiomatch verbindt artiesten met opnamestudio's: online zien waar wat zit, beschikbaarheid bekijken en meteen boeken. Voordat we bouwen, lopen we per functionaliteit de keuzes langs. Jouw antwoorden bepalen de exacte invulling van de MVP en worden vastgelegd in de SOW.</p>
       <div class="cover-meta">
-        <div class="meta-pill"><label>Datum</label><input type="text" id="meta-datum" placeholder="dd-mm-jjjj"></div>
-        <div class="meta-pill"><label>Project</label><input type="text" id="meta-project" value="Studiomatch MVP"></div>
-        <div class="meta-pill"><label>Contactpersoon</label><input type="text" id="meta-contact" placeholder="Naam"></div>
+        <div class="meta-pill"><label>Datum</label><input type="text" placeholder="dd-mm-jjjj"></div>
+        <div class="meta-pill"><label>Project</label><input type="text" value="Studiomatch MVP"></div>
+        <div class="meta-pill"><label>Contactpersoon</label><input type="text" placeholder="Naam"></div>
       </div>
     </div>
 
@@ -687,18 +673,11 @@
     </div>
 
     <div class="doc-footer">
-      <strong>Klaar?</strong> Klik rechtsboven op <strong>Opslaan &amp; Versturen</strong> om je antwoorden veilig in het systeem op te slaan. Je krijgt daarna een eigen link waarmee je later verder kunt werken. Liever een PDF? Klik dan op <strong>PDF</strong> — bij het printen worden alle blokken automatisch uitgeklapt.
+      <strong>Klaar?</strong> Klik rechtsboven op <strong>Opslaan als PDF</strong> (kies bij printer "Opslaan als PDF") en stuur het ingevulde bestand terug naar EAZYONLINE. Bij het opslaan worden alle blokken automatisch uitgeklapt. Je antwoorden blijven bewaard zolang je dit bestand geopend houdt.
     </div>
 
   </main>
 
-  <div class="toast" id="toast"></div>
-
-  <script>
-    window.EXISTING_SUBMISSION = @json($submission);
-  </script>
-
-@verbatim
 <script>
   function grow(el){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
   function growAll(){ document.querySelectorAll('textarea.auto').forEach(grow); }
@@ -816,269 +795,25 @@
     r.readAsDataURL(f); input.value='';
   }
 
-  function csrfToken(){ const m=document.querySelector('meta[name="csrf-token"]'); return m ? m.content : ''; }
-
-  function renderUpItem(list, data, isImage, previewSrc){
-    const d=document.createElement('div');
-    d.dataset.fileId = data.id;
-    d.dataset.url = data.url || previewSrc || '';
-    if(isImage){
-      d.className='upitem upimg';
-      d.innerHTML='<img src="'+(previewSrc||data.url||'')+'" alt=""><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button><span class="upname">'+escapeHtml(data.original_name||'')+'</span>';
-    } else {
-      d.className='upitem upfile';
-      d.innerHTML='<span class="upicon">'+fileSvg()+'</span><span class="upmeta"><span class="upname">'+escapeHtml(data.original_name||'')+'</span><span class="upsize">'+fmtSize(data.file_size||0)+'</span></span><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button>';
-    }
-    list.appendChild(d);
-    return d;
-  }
-
   function handleFiles(input){
     const list=input.closest('.uploader').querySelector('.uplist');
     const acc=input.closest('.acc');
     Array.from(input.files||[]).forEach(f=>{
-      const isImage = f.type.indexOf('image/')===0;
-      const fd=new FormData(); fd.append('file', f);
-      fetch('/uploads', { method:'POST', headers:{ 'X-CSRF-TOKEN':csrfToken() }, body:fd })
-        .then(r=>r.json())
-        .then(data=>{
-          if(!data || !data.id){ showToast('Uploaden mislukt.', 'error'); return; }
-          if(isImage){
-            const rd=new FileReader();
-            rd.onload=e=>{ renderUpItem(list, data, true, e.target.result); refreshOpenHeight(acc); };
-            rd.readAsDataURL(f);
-          } else {
-            renderUpItem(list, data, false); refreshOpenHeight(acc);
-          }
-        })
-        .catch(()=>showToast('Uploaden mislukt.', 'error'));
+      if(f.type.indexOf('image/')===0){
+        const r=new FileReader();
+        r.onload=e=>{ const d=document.createElement('div'); d.className='upitem upimg'; d.innerHTML='<img src="'+e.target.result+'" alt=""><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button><span class="upname">'+escapeHtml(f.name)+'</span>'; list.appendChild(d); refreshOpenHeight(acc); };
+        r.readAsDataURL(f);
+      } else {
+        const d=document.createElement('div'); d.className='upitem upfile';
+        d.innerHTML='<span class="upicon">'+fileSvg()+'</span><span class="upmeta"><span class="upname">'+escapeHtml(f.name)+'</span><span class="upsize">'+fmtSize(f.size)+' · stuur dit los mee met de mail</span></span><button type="button" class="upx" onclick="removeFile(this)" aria-label="Verwijderen">&times;</button>';
+        list.appendChild(d); refreshOpenHeight(acc);
+      }
     });
     input.value='';
   }
+  function removeFile(btn){ const acc=btn.closest('.acc'); btn.closest('.upitem').remove(); refreshOpenHeight(acc); }
 
-  function removeFile(btn){
-    const acc=btn.closest('.acc');
-    const item=btn.closest('.upitem');
-    const id=item.dataset.fileId;
-    if(id){ fetch('/uploads/'+id, { method:'DELETE', headers:{ 'X-CSRF-TOKEN':csrfToken(), 'Content-Type':'application/json' } }).catch(()=>{}); }
-    item.remove();
-    refreshOpenHeight(acc);
-  }
-
-  // ===== TOAST =====
-  function showToast(msg, type){
-    const toast=document.getElementById('toast');
-    if(!toast) return;
-    toast.textContent=msg;
-    toast.className='toast '+(type||'');
-    requestAnimationFrame(()=>toast.classList.add('show'));
-    clearTimeout(showToast._t);
-    showToast._t=setTimeout(()=>toast.classList.remove('show'), 4500);
-  }
-
-  // ===== SERIALIZE / RESTORE =====
-  // Walks the document treating checkbox groups, dynamic entry lists and
-  // uploaders as single "units", so the same ordered walk drives saving,
-  // restoring and the admin view — regardless of how many steps/scenarios exist.
-
-  function labelFor(el){
-    const fcol = el.closest('.fcol, .afield');
-    if(fcol){ const fl=fcol.querySelector('.flabel'); if(fl) return fl.textContent.trim(); }
-    const qbox = el.closest('.qbox, .meta-pill');
-    if(qbox){ const ql=qbox.querySelector('.qlabel, label'); if(ql) return ql.textContent.trim(); }
-    return el.getAttribute('placeholder') || '';
-  }
-
-  function unitsIn(root){
-    const units=[];
-    (function walk(node){
-      for(const child of node.children){
-        if(child.matches('.checks')){ units.push({el:child, type:'checks'}); }
-        else if(child.matches('.entries')){ units.push({el:child, type: child.querySelector('.wstep') ? 'steps' : 'scenarios'}); }
-        else if(child.matches('.uploader')){ units.push({el:child, type:'files'}); }
-        else if(child.matches('input[type=text], textarea, select')){ units.push({el:child, type:'simple'}); }
-        else { walk(child); }
-      }
-    })(root);
-    return units;
-  }
-
-  function sectionMeta(section){
-    const num = section.querySelector('.eyebrow .ey-num');
-    const h2  = section.querySelector('.sec-head h2');
-    return { id: num ? num.textContent.trim() : '', title: h2 ? h2.textContent.trim() : '' };
-  }
-
-  function readUnit(u){
-    const el=u.el;
-    if(u.type==='simple'){
-      const isSelect = el.tagName==='SELECT';
-      let val = el.value ? el.value.trim() : '';
-      if(isSelect && (val==='' || val.startsWith('— kies'))) val='';
-      return { type: isSelect ? 'select' : (el.tagName==='TEXTAREA' ? 'textarea' : 'text'), label: labelFor(el), value: val };
-    }
-    if(u.type==='checks'){
-      const checked=[];
-      el.querySelectorAll('input[type=checkbox]').forEach(cb=>{ if(cb.checked){ const s=cb.closest('.check').querySelector('span'); checked.push(s ? s.textContent.trim() : ''); } });
-      return { type:'checks', label: labelFor(el.querySelector('input') || el), value: checked };
-    }
-    if(u.type==='steps'){
-      const steps=[];
-      el.querySelectorAll('.entry.wstep').forEach(entry=>{
-        const fcols=entry.querySelectorAll('.fcol');
-        const a=fcols[0] ? fcols[0].querySelector('textarea,input') : null;
-        const b=fcols[1] ? fcols[1].querySelector('textarea,input') : null;
-        const la=fcols[0] ? fcols[0].querySelector('.flabel') : null;
-        const lb=fcols[1] ? fcols[1].querySelector('.flabel') : null;
-        steps.push({ actor_label: la?la.textContent.trim():'', actor: a?a.value.trim():'', system_label: lb?lb.textContent.trim():'', system: b?b.value.trim():'' });
-      });
-      return { type:'steps', label: labelFor(el), value: steps };
-    }
-    if(u.type==='scenarios'){
-      const scen=[];
-      el.querySelectorAll('.entry.wf').forEach(entry=>{
-        const nameEl=entry.querySelector('input[type=text]');
-        const descEl=entry.querySelector('textarea');
-        scen.push({ name: nameEl?nameEl.value.trim():'', description: descEl?descEl.value.trim():'' });
-      });
-      return { type:'scenarios', label: labelFor(el), value: scen };
-    }
-    if(u.type==='files'){
-      const files=[];
-      el.querySelectorAll('.upitem[data-file-id]').forEach(item=>{
-        const img=item.querySelector('img');
-        const nameEl=item.querySelector('.upname');
-        files.push({ id: parseInt(item.dataset.fileId,10), name: nameEl?nameEl.textContent.trim():'', image: !!img, preview: item.dataset.url || (img?img.getAttribute('src'):'') });
-      });
-      return { type:'files', label: labelFor(el.querySelector('.upbtn') || el), value: files };
-    }
-    return null;
-  }
-
-  function collectFormData(){
-    const meta = {
-      datum: (document.getElementById('meta-datum').value||'').trim(),
-      project_name: (document.getElementById('meta-project').value||'').trim(),
-      contactpersoon: (document.getElementById('meta-contact').value||'').trim(),
-    };
-    const sections=[];
-    const fileIds=[];
-    document.querySelectorAll('.doc-inner > section').forEach(section=>{
-      const sm=sectionMeta(section);
-      const items=[];
-      unitsIn(section).forEach(u=>{
-        const rec=readUnit(u);
-        if(!rec) return;
-        const acc=u.el.closest('.acc');
-        if(acc){ const nm=acc.querySelector('.acc-name'), nn=acc.querySelector('.acc-num'); rec.group=((nn?nn.textContent.trim()+' ':'')+(nm?nm.textContent.trim():'')).trim(); }
-        if(rec.type==='files'){ rec.value.forEach(f=>{ if(f.id) fileIds.push(f.id); }); }
-        items.push(rec);
-      });
-      sections.push({ id: sm.id, title: sm.title, items: items });
-    });
-    return {
-      datum: meta.datum,
-      project_name: meta.project_name,
-      contactpersoon: meta.contactpersoon,
-      answers: { meta: meta, sections: sections },
-      file_ids: fileIds,
-    };
-  }
-
-  function restoreUnit(u, rec){
-    if(!rec) return;
-    const el=u.el;
-    if(u.type==='simple'){
-      if(el.tagName==='SELECT'){
-        for(let i=0;i<el.options.length;i++){ if(el.options[i].value===rec.value || el.options[i].text===rec.value){ el.selectedIndex=i; break; } }
-      } else { el.value = rec.value||''; if(el.matches('textarea.auto')) grow(el); }
-    }
-    else if(u.type==='checks'){
-      const want=new Set(rec.value||[]);
-      el.querySelectorAll('.check').forEach(lbl=>{ const s=lbl.querySelector('span'); const cb=lbl.querySelector('input[type=checkbox]'); if(cb) cb.checked = s ? want.has(s.textContent.trim()) : cb.checked; });
-    }
-    else if(u.type==='steps'){
-      const arr=rec.value||[]; if(!arr.length) return;
-      const proto=el.querySelector('.entry.wstep');
-      while(el.querySelectorAll('.entry.wstep').length < arr.length){ el.appendChild(proto.cloneNode(true)); }
-      const entries=el.querySelectorAll('.entry.wstep');
-      arr.forEach((s,i)=>{ const fcols=entries[i].querySelectorAll('.fcol'); const a=fcols[0]&&fcols[0].querySelector('textarea,input'); const b=fcols[1]&&fcols[1].querySelector('textarea,input'); if(a){a.value=s.actor||''; if(a.matches('textarea.auto'))grow(a);} if(b){b.value=s.system||''; if(b.matches('textarea.auto'))grow(b);} });
-      el.querySelectorAll('.entry.wstep .entry-tag').forEach((t,i)=>t.textContent='Stap '+(i+1));
-    }
-    else if(u.type==='scenarios'){
-      const arr=rec.value||[]; if(!arr.length) return;
-      const proto=el.querySelector('.entry.wf');
-      while(el.querySelectorAll('.entry.wf').length < arr.length){ el.appendChild(proto.cloneNode(true)); }
-      const entries=el.querySelectorAll('.entry.wf');
-      arr.forEach((s,i)=>{ const nameEl=entries[i].querySelector('input[type=text]'); const descEl=entries[i].querySelector('textarea'); if(nameEl)nameEl.value=s.name||''; if(descEl){descEl.value=s.description||''; if(descEl.matches('textarea.auto'))grow(descEl);} });
-    }
-    else if(u.type==='files'){
-      const list=el.querySelector('.uplist'); if(!list) return;
-      (rec.value||[]).forEach(f=>{ renderUpItem(list, { id:f.id, original_name:f.name, url:f.preview }, !!f.image, f.preview); });
-    }
-  }
-
-  function populateForm(sub){
-    if(!sub) return;
-    const a = sub.answers || {};
-    const meta = a.meta || {};
-    if(meta.datum!==undefined) document.getElementById('meta-datum').value=meta.datum||'';
-    if(meta.project_name!==undefined) document.getElementById('meta-project').value=meta.project_name||'';
-    if(meta.contactpersoon!==undefined) document.getElementById('meta-contact').value=meta.contactpersoon||'';
-
-    const savedSections = a.sections || [];
-    document.querySelectorAll('.doc-inner > section').forEach((section, si)=>{
-      const saved = savedSections[si];
-      if(!saved || !saved.items) return;
-      const units = unitsIn(section);
-      units.forEach((u, ui)=>{ restoreUnit(u, saved.items[ui]); });
-    });
-
-    // Re-evaluate filled indicators for accordions.
-    document.querySelectorAll('.acc').forEach(acc=>{ if(typeof updateFilled==='function') updateFilled(acc); });
-  }
-
-  // ===== SUBMIT =====
-  function submitForm(){
-    const btn=document.getElementById('saveBtn');
-    const original=btn.innerHTML;
-    btn.disabled=true;
-    btn.innerHTML='<svg class="animate-spin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Bezig met opslaan…';
-
-    const data=collectFormData();
-    const existing=window.EXISTING_SUBMISSION;
-    const isEdit = existing && existing.id;
-    const url = isEdit ? '/submissions/'+existing.id : '/submissions';
-    const method = isEdit ? 'PUT' : 'POST';
-
-    fetch(url, {
-      method: method,
-      headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken(), 'Accept':'application/json' },
-      body: JSON.stringify(data),
-    })
-    .then(res=>{ if(!res.ok) return res.json().then(err=>{ throw err; }); return res.json(); })
-    .then(result=>{
-      showToast('Uitvraag succesvol opgeslagen!', 'success');
-      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg> Opgeslagen';
-      if(!isEdit && result.id){ setTimeout(()=>{ window.location.href='/'+result.id; }, 1000); return; }
-      if(result.id && !window.EXISTING_SUBMISSION){ window.EXISTING_SUBMISSION={ id: result.id }; }
-      setTimeout(()=>{ btn.disabled=false; btn.innerHTML=original; }, 2500);
-    })
-    .catch(err=>{
-      let msg='Er is iets misgegaan bij het opslaan.';
-      if(err && err.errors){ msg=Object.values(err.errors).flat().join('\n'); }
-      showToast(msg, 'error');
-      btn.disabled=false; btn.innerHTML=original;
-    });
-  }
-
-  (function(){
-    rebuildNav();
-    growAll();
-    if(window.EXISTING_SUBMISSION){ populateForm(window.EXISTING_SUBMISSION); rebuildNav(); growAll(); }
-    const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true);
-  })();
+  (function(){ rebuildNav(); growAll(); const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true); })();
 </script>
-@endverbatim
 </body>
 </html>
