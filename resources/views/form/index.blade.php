@@ -211,7 +211,7 @@
     </div>
     <div class="tb-actions">
       <button class="btn btn-ghost" id="expandBtn" onclick="toggleAll()">Alles uitklappen</button>
-      <button class="btn btn-ghost" onclick="expandAll();window.print()">
+      <button class="btn btn-ghost" onclick="exportPdf()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
         PDF
       </button>
@@ -1072,25 +1072,21 @@
     });
   }
 
-  // Auto-open the print dialog when opened with ?print=1 (used by "Exporteer als PDF").
-  function triggerAutoPrint(){
-    expandAll();
-    growAll();
-    const go=()=>setTimeout(()=>window.print(), 500);
-    if(document.readyState==='complete') go();
-    else window.addEventListener('load', go, { once:true });
+  // Export the saved submission as a clean, complete PDF (read-only print view).
+  function exportPdf(){
+    const existing = window.EXISTING_SUBMISSION;
+    if(existing && existing.id){
+      window.open('/' + existing.id + '/pdf', '_blank');
+    } else {
+      showToast('Sla eerst op via "Opslaan & Versturen" — daarna kun je de PDF met alle antwoorden exporteren.', 'error');
+    }
   }
 
   (function(){
     rebuildNav();
     growAll();
     if(window.EXISTING_SUBMISSION){ populateForm(window.EXISTING_SUBMISSION); rebuildNav(); growAll(); }
-    const wantPrint = new URLSearchParams(window.location.search).get('print')==='1';
-    if(wantPrint){
-      triggerAutoPrint();
-    } else {
-      const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true);
-    }
+    const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true);
   })();
 </script>
 @endverbatim

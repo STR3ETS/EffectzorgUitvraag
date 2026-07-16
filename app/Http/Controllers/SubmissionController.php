@@ -22,6 +22,13 @@ class SubmissionController extends Controller
         return view('form.index', ['submission' => $submission]);
     }
 
+    public function pdf(Submission $submission)
+    {
+        $submission->load('fileUploads');
+
+        return view('form.pdf', ['submission' => $submission]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $this->validateData($request);

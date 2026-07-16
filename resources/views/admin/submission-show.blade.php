@@ -21,7 +21,7 @@
     @else
       <span class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 rounded-full px-3 py-1 text-sm font-medium">Concept</span>
     @endif
-    <a href="{{ url('/' . $submission->id . '?print=1') }}" target="_blank"
+    <a href="{{ url('/' . $submission->id . '/pdf') }}" target="_blank"
        class="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-700 transition">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
       Exporteer als PDF
