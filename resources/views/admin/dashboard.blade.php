@@ -43,7 +43,8 @@
             @endif
           </td>
           <td class="px-6 py-4 text-sm text-gray-500">{{ $sub->submitted_at ? $sub->submitted_at->format('d-m-Y H:i') : '—' }}</td>
-          <td class="px-6 py-4 text-right">
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <a href="{{ url('/' . $sub->id . '?print=1') }}" target="_blank" class="text-sm font-medium text-gray-500 hover:text-gray-800 mr-4">PDF</a>
             <a href="{{ route('admin.submissions.show', $sub) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800">Bekijken &rarr;</a>
           </td>
         </tr>

@@ -1072,11 +1072,25 @@
     });
   }
 
+  // Auto-open the print dialog when opened with ?print=1 (used by "Exporteer als PDF").
+  function triggerAutoPrint(){
+    expandAll();
+    growAll();
+    const go=()=>setTimeout(()=>window.print(), 500);
+    if(document.readyState==='complete') go();
+    else window.addEventListener('load', go, { once:true });
+  }
+
   (function(){
     rebuildNav();
     growAll();
     if(window.EXISTING_SUBMISSION){ populateForm(window.EXISTING_SUBMISSION); rebuildNav(); growAll(); }
-    const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true);
+    const wantPrint = new URLSearchParams(window.location.search).get('print')==='1';
+    if(wantPrint){
+      triggerAutoPrint();
+    } else {
+      const first=document.querySelector('#funcs .acc'); if(first) setOpen(first,true);
+    }
   })();
 </script>
 @endverbatim
